@@ -38,29 +38,47 @@ namespace RareAPI.Services
         }
 
         public async Task InitializeDatabaseAsync()
-{
-    // First, create the database if it doesn't exist
-    using var connection = new NpgsqlConnection(_connectionString.Replace("Database=RareAPI", "Database=postgres"));
-    await connection.OpenAsync();
+        {
+            // Connect to postgres to check/create the database
+            var masterConnStr = _connectionString.Replace("Database=RareAPI", "Database=postgres");
+            using var masterConnection = new NpgsqlConnection(masterConnStr);
+            await masterConnection.OpenAsync();
 
-    // Check if database exists
-    using var checkCommand = new NpgsqlCommand(
-        "SELECT 1 FROM pg_database WHERE datname = 'rareapi'",
-        connection);
-    var exists = await checkCommand.ExecuteScalarAsync();
+            // Check if database exists (PostgreSQL database names are case-sensitive)
+            using var checkCommand = new NpgsqlCommand(
+                "SELECT 1 FROM pg_database WHERE datname = 'RareAPI'",
+                masterConnection);
+            var exists = await checkCommand.ExecuteScalarAsync();
 
-    if (exists == null)
-    {
-        // Create the database
-        using var createDbCommand = new NpgsqlCommand(
-            "CREATE DATABASE rareapi",
-            connection);
-        await createDbCommand.ExecuteNonQueryAsync();
-    }
+            if (exists == null)
+            {
+                // Create the database
+                using var createDbCommand = new NpgsqlCommand(
+                    "CREATE DATABASE \"RareAPI\"",
+                    masterConnection);
+                await createDbCommand.ExecuteNonQueryAsync();
+            }
 
-    // Now connect to the harbormaster database and create tables
-    string sql = File.ReadAllText("database-setup.sql");
-    await ExecuteNonQueryAsync(sql);
-}
+            // Close the master connection before connecting to RareAPI
+            await masterConnection.CloseAsync();
+
+            // Now connect to the RareAPI database and check/create tables
+            using var rareApiConnection = new NpgsqlConnection(_connectionString);
+            await rareApiConnection.OpenAsync();
+
+            // Check if tables already exist
+            using var checkTablesCommand = new NpgsqlCommand(
+                "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'Users'",
+                rareApiConnection);
+            var tableExists = (long)(await checkTablesCommand.ExecuteScalarAsync() ?? 0L);
+
+            if (tableExists == 0)
+            {
+                // Tables don't exist, create them
+                string sql = File.ReadAllText("database-setup.sql");
+                using var setupCommand = new NpgsqlCommand(sql, rareApiConnection);
+                await setupCommand.ExecuteNonQueryAsync();
+            }
+        }
     }
 }
