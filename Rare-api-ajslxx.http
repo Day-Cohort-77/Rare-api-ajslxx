@@ -1,0 +1,6 @@
+@Rare_api_ajslxx_HostAddress = http://localhost:5285
+
+GET {{Rare_api_ajslxx_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
