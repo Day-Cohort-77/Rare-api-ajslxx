@@ -1,8 +1,8 @@
 namespace RareAPI.Models
 {
-    public class Reaction
+    public class Tag
     {
-        public int Id { get; set; }
-        public string Tag { get; set; }
+        public required int Id { get; set; }
+        public required string Label { get; set; } = string.Empty;
     }
 }
