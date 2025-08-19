@@ -1,10 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>Rare_api_ajslxx</RootNamespace>
+    <RootNamespace>RareAPI</RootNamespace>
+    <UserSecretsId>625e9a3d-cc86-4d26-8947-c4863bb1ff56</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
