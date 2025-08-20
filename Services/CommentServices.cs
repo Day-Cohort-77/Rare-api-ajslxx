@@ -1,0 +1,183 @@
+
+using Npgsql;
+using RareAPI.Models;
+
+namespace RareAPI.Services
+{
+    public class CommentServices
+    {
+        private readonly DatabaseService _databaseService;
+
+        public CommentServices(DatabaseService databaseService)
+        {
+            _databaseService = databaseService;
+        }
+
+        private NpgsqlConnection CreateConnection()
+        {
+            return _databaseService.CreateConnection();
+        }
+
+        public async Task<Comment> CreateCommentAsync(Comment comment)
+        {
+            string sql = @"
+                INSERT INTO ""Comments"" (post_id, author_id, content) 
+                VALUES (@postId, @authorId, @content)
+                RETURNING id, post_id, author_id, content;";
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "@postId", comment.PostId },
+                { "@authorId", comment.AuthorId },
+                { "@content", comment.Content }
+            };
+
+            using var connection = CreateConnection();
+            await connection.OpenAsync();
+
+            using var command = new NpgsqlCommand(sql, connection);
+            foreach (var param in parameters)
+            {
+                command.Parameters.AddWithValue(param.Key, param.Value);
+            }
+
+            using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return new Comment
+                {
+                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                    PostId = reader.GetInt32(reader.GetOrdinal("PostId")),
+                    AuthorId = reader.GetInt32(reader.GetOrdinal("AuthorId")),
+                    Content = reader.GetString(reader.GetOrdinal("Content"))
+                };
+            }
+
+            throw new InvalidOperationException("Failed to create comment");
+        }
+
+        public async Task<List<Comment>> GetCommentsByPostIdAsync(int postId)
+        {
+            string sql = @"
+                SELECT 
+                comment.id AS Id,
+                comment.post_id AS PostId,
+                comment.author_id AS AuthorId,
+                comment.content AS Content,
+                user.first_name AS AuthorFirstName,
+                user.last_name AS AuthorLastName,
+                user.username AS AuthorUsername
+                FROM ""Comments"" c
+                JOIN ""Users"" u ON c.author_id = u.id
+                WHERE c.post_id = @postId
+                ORDER BY c.id ASC;";
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "@postId", postId }
+            };
+
+            using var connection = CreateConnection();
+            await connection.OpenAsync();
+
+            using var command = new NpgsqlCommand(sql, connection);
+            foreach (var param in parameters)
+            {
+                command.Parameters.AddWithValue(param.Key, param.Value);
+            }
+
+            using var reader = await command.ExecuteReaderAsync();
+
+            var comments = new List<Comment>();
+            while (await reader.ReadAsync())
+            {
+                comments.Add(new Comment
+                {
+                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                    PostId = reader.GetInt32(reader.GetOrdinal("PostId")),
+                    AuthorId = reader.GetInt32(reader.GetOrdinal("AuthorId")),
+                    Content = reader.GetString(reader.GetOrdinal("Content"))
+                });
+            }
+            return comments;
+        }
+
+        // Get all comments
+        public async Task<List<Comment>> GetAllCommentsAsync()
+        {
+            string sql = @"
+                SELECT 
+                id AS Id,
+                post_id AS PostId,
+                author_id AS AuthorId,
+                content AS Content
+                FROM ""Comments""
+                ORDER BY id ASC;";
+
+            using var connection = CreateConnection();
+            await connection.OpenAsync();
+
+            using var command = new NpgsqlCommand(sql, connection);
+            using var reader = await command.ExecuteReaderAsync();
+
+            var comments = new List<Comment>();
+            while (await reader.ReadAsync())
+            {
+                comments.Add(new Comment
+                {
+                     Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                    PostId = reader.GetInt32(reader.GetOrdinal("PostId")),
+                    AuthorId = reader.GetInt32(reader.GetOrdinal("AuthorId")),
+                    Content = reader.GetString(reader.GetOrdinal("Content"))
+                });
+            }
+            return comments;
+        }
+
+        // Update a comment
+        public async Task<Comment?> UpdateCommentAsync(int commentId, string newContent)
+        {
+            string sql = @"
+                UPDATE ""Comments"" 
+                SET content = @content 
+                WHERE id = @id
+                RETURNING id, post_id, author_id, content;";
+
+            using var connection = CreateConnection();
+            await connection.OpenAsync();
+
+            using var command = new NpgsqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@content", newContent);
+            command.Parameters.AddWithValue("@id", commentId);
+
+            using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return new Comment
+                {
+                     Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                    PostId = reader.GetInt32(reader.GetOrdinal("PostId")),
+                    AuthorId = reader.GetInt32(reader.GetOrdinal("AuthorId")),
+                    Content = reader.GetString(reader.GetOrdinal("Content"))
+                };
+            }
+
+            return null; // Comment not found
+        }
+
+        // Delete a comment
+        public async Task<bool> DeleteCommentAsync(int commentId)
+        {
+            string sql = @"DELETE FROM ""Comments"" WHERE id = @id";
+
+            using var connection = CreateConnection();
+            await connection.OpenAsync();
+
+            using var command = new NpgsqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@id", commentId);
+
+            var rowsAffected = await command.ExecuteNonQueryAsync();
+            return rowsAffected > 0;
+        }
+    }
+}
