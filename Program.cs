@@ -1,6 +1,7 @@
 
 using RareAPI.Services;
 using RareAPI.Models;
+using RareAPI.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,24 +28,7 @@ app.MapGet("/users", async (DatabaseService dbService) =>
     return await dbService.GetAllUsersAsync();
 });
 
-
-app.MapGet("/comments", async (CommentServices commentService) =>
-{
-    return await commentService.GetAllCommentsAsync();
-});
-
-
-app.MapDelete("/comments/{id}", async (int id, CommentServices commentService) =>
-{
-    var deleted = await commentService.DeleteCommentAsync(id);
-    if (deleted)
-    {
-        return Results.NoContent(); // 204 No Content - successful deletion
-    }
-    else
-    {
-        return Results.NotFound(); // 404 Not Found - comment doesn't exist
-    }
-});
+// Map all comment endpoints
+app.MapCommentEndpoints();
 
 app.Run();
