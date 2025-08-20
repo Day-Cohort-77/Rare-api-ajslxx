@@ -46,10 +46,10 @@ namespace RareAPI.Services
             {
                 return new Comment
                 {
-                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                    PostId = reader.GetInt32(reader.GetOrdinal("PostId")),
-                    AuthorId = reader.GetInt32(reader.GetOrdinal("AuthorId")),
-                    Content = reader.GetString(reader.GetOrdinal("Content"))
+                    Id = reader.GetInt32(0),           // id
+                    PostId = reader.GetInt32(1),       // post_id
+                    AuthorId = reader.GetInt32(2),     // author_id
+                    Content = reader.GetString(3)      // content
                 };
             }
 
@@ -60,13 +60,13 @@ namespace RareAPI.Services
         {
             string sql = @"
                 SELECT 
-                comment.id AS Id,
-                comment.post_id AS PostId,
-                comment.author_id AS AuthorId,
-                comment.content AS Content,
-                user.first_name AS AuthorFirstName,
-                user.last_name AS AuthorLastName,
-                user.username AS AuthorUsername
+                c.id AS Id,
+                c.post_id AS PostId,
+                c.author_id AS AuthorId,
+                c.content AS Content,
+                u.first_name AS AuthorFirstName,
+                u.last_name AS AuthorLastName,
+                u.username AS AuthorUsername
                 FROM ""Comments"" c
                 JOIN ""Users"" u ON c.author_id = u.id
                 WHERE c.post_id = @postId
@@ -93,10 +93,10 @@ namespace RareAPI.Services
             {
                 comments.Add(new Comment
                 {
-                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                    PostId = reader.GetInt32(reader.GetOrdinal("PostId")),
-                    AuthorId = reader.GetInt32(reader.GetOrdinal("AuthorId")),
-                    Content = reader.GetString(reader.GetOrdinal("Content"))
+                    Id = reader.GetInt32(0),        // c.id AS Id
+                    PostId = reader.GetInt32(1),    // c.post_id AS PostId
+                    AuthorId = reader.GetInt32(2),  // c.author_id AS AuthorId
+                    Content = reader.GetString(3)   // c.content AS Content
                 });
             }
             return comments;
@@ -125,10 +125,10 @@ namespace RareAPI.Services
             {
                 comments.Add(new Comment
                 {
-                     Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                    PostId = reader.GetInt32(reader.GetOrdinal("PostId")),
-                    AuthorId = reader.GetInt32(reader.GetOrdinal("AuthorId")),
-                    Content = reader.GetString(reader.GetOrdinal("Content"))
+                    Id = reader.GetInt32(0),        // id AS Id
+                    PostId = reader.GetInt32(1),    // post_id AS PostId
+                    AuthorId = reader.GetInt32(2),  // author_id AS AuthorId
+                    Content = reader.GetString(3)   // content AS Content
                 });
             }
             return comments;
@@ -155,10 +155,10 @@ namespace RareAPI.Services
             {
                 return new Comment
                 {
-                     Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                    PostId = reader.GetInt32(reader.GetOrdinal("PostId")),
-                    AuthorId = reader.GetInt32(reader.GetOrdinal("AuthorId")),
-                    Content = reader.GetString(reader.GetOrdinal("Content"))
+                    Id = reader.GetInt32(0),        // id
+                    PostId = reader.GetInt32(1),    // post_id
+                    AuthorId = reader.GetInt32(2),  // author_id
+                    Content = reader.GetString(3)   // content
                 };
             }
 
