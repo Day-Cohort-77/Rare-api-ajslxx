@@ -8,6 +8,6 @@ namespace RareAPI.Models
 
         public int AuthorId { get; set; }
 
-        public string Content { get; set; }
+        public required string Content { get; set; }
     }
 }
