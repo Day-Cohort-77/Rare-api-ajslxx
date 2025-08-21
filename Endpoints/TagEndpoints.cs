@@ -8,40 +8,39 @@ namespace RareAPI.Endpoints
     public static void MapTagEndpoints(this WebApplication app)
     {
       // GET all tags
-      app.MapGet("/tags", async (DatabaseService db) =>
+      app.MapGet("/tags", async (TagService tagService) =>
       {
-        var tags = await db.GetAllTagsAsync();
+        var tags = await tagService.GetAllTagsAsync();
         return Results.Ok(tags);
       });
 
       // POST new tag
-      app.MapPost("/tags", async (DatabaseService db, Tag newTag) =>
+      app.MapPost("/tags", async (TagService tagService, Tag newTag) =>
       {
-        await db.AddTagAsync(newTag.Label);
+        await tagService.AddTagAsync(newTag.Label);
         return Results.Created($"/tags/{newTag.Label}", newTag);
       });
+
       // DELETE tag by ID
-      app.MapDelete("/tags/{id}", async (DatabaseService db, int id) =>
-{
-  await db.DeleteTagAsync(id);
-  return Results.NoContent();
-});
-      // Add these endpoints to your existing TagEndpoints class
+      app.MapDelete("/tags/{id}", async (TagService tagService, int id) =>
+      {
+        await tagService.DeleteTagAsync(id);
+        return Results.NoContent();
+      });
 
       // GET single tag by id
-      app.MapGet("/tags/{id}", async (DatabaseService db, int id) =>
+      app.MapGet("/tags/{id}", async (TagService tagService, int id) =>
       {
-        var tag = await db.GetTagByIdAsync(id);
+        var tag = await tagService.GetTagByIdAsync(id);
         return Results.Ok(tag);
       });
 
       // PUT update tag by id
-      app.MapPut("/tags/{id}", async (DatabaseService db, int id, Tag updatedTag) =>
+      app.MapPut("/tags/{id}", async (TagService tagService, int id, Tag updatedTag) =>
       {
-        await db.UpdateTagAsync(id, updatedTag.Label);
-        return Results.Ok($"Tag updated successfully");
+        await tagService.UpdateTagAsync(id, updatedTag.Label);
+        return Results.Ok("Tag updated successfully");
       });
-      
     }
   }
 }

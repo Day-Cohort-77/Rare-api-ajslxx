@@ -5,6 +5,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSingleton<DatabaseService>();
+builder.Services.AddScoped<TagService>();
+
 
 // Add CORS services
 builder.Services.AddCors(options =>

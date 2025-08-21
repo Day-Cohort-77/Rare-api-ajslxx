@@ -1,6 +1,5 @@
 using Npgsql;
 using RareAPI.Models;
-using System.Data;
 
 namespace RareAPI.Services
 {
@@ -80,6 +79,7 @@ namespace RareAPI.Services
                 await setupCommand.ExecuteNonQueryAsync();
             }
         }
+
         public async Task SeedDatabaseAsync()
         {
             // Check if data already exists
@@ -112,31 +112,6 @@ namespace RareAPI.Services
                 ('#beach');
             ");
         }
-        public async Task<List<Tag>> GetAllTagsAsync()
-        {
-            var response = new List<Tag>();
-
-            using var connection = CreateConnection();
-            await connection.OpenAsync();
-
-            using var command = new NpgsqlCommand(
-              @"SELECT id, label FROM ""Tags"";",
-               connection);
-
-
-            using var reader = await command.ExecuteReaderAsync();
-
-            while (await reader.ReadAsync())
-            {
-                response.Add(new Tag
-                {
-                    Id = reader.GetInt32(reader.GetOrdinal("id")),
-                    Label = reader.GetString(reader.GetOrdinal("label"))
-                });
-            }
-
-            return response;
-        }
 
         public async Task<List<User>> GetAllUsersAsync()
         {
@@ -167,71 +142,5 @@ namespace RareAPI.Services
 
             return response;
         }
-
-
-        public async Task AddTagAsync(string label)
-        {
-            const string sql = @"INSERT INTO ""Tags"" (label) VALUES (@label);";
-
-            var parameters = new Dictionary<string, object>
-                {
-                    { "@label", label }
-                };
-
-            await ExecuteNonQueryAsync(sql, parameters);
-        }
-        public async Task DeleteTagAsync(int id)
-        {
-            const string sql = @"DELETE FROM ""Tags"" WHERE id = @id;";
-
-            var parameters = new Dictionary<string, object>
-    {
-        { "@id", id }
-    };
-
-            await ExecuteNonQueryAsync(sql, parameters);
-        }
-
-
-        // Add these methods to your existing DatabaseService class
-
-        public async Task<Tag?> GetTagByIdAsync(int id)
-        {
-            using var connection = CreateConnection();
-            await connection.OpenAsync();
-
-            using var command = new NpgsqlCommand(
-                @"SELECT id, label FROM ""Tags"" WHERE id = @id;",
-                connection);
-
-            command.Parameters.AddWithValue("@id", id);
-
-            using var reader = await command.ExecuteReaderAsync();
-
-            if (await reader.ReadAsync())
-            {
-                return new Tag
-                {
-                    Id = reader.GetInt32(reader.GetOrdinal("id")),
-                    Label = reader.GetString(reader.GetOrdinal("label"))
-                };
-            }
-
-            return null;
-        }
-
-        public async Task UpdateTagAsync(int id, string label)
-{
-    const string sql = @"UPDATE ""Tags"" SET label = @label WHERE id = @id;";
-
-    var parameters = new Dictionary<string, object>
-    {
-        { "@id", id },
-        { "@label", label }
-    };
-
-    await ExecuteNonQueryAsync(sql, parameters);
-}
-
     }
 }
