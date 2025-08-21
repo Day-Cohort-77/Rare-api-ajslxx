@@ -146,16 +146,16 @@ namespace RareAPI.Services
             {
                 response.Add(new User
                 {
-                    Id = reader.GetInt32(reader.GetOrdinal("id")),
-                    FirstName = reader.GetString(reader.GetOrdinal("first_name")),
-                    LastName = reader.GetString(reader.GetOrdinal("last_name")),
-                    Email = reader.GetString(reader.GetOrdinal("email")),
-                    Bio = reader.GetString(reader.GetOrdinal("bio")),
-                    Username = reader.GetString(reader.GetOrdinal("username")),
-                    Password = reader.GetString(reader.GetOrdinal("password")),
-                    ProfileImageUrl = reader.GetString(reader.GetOrdinal("profile_image_url")),
-                    CreatedOn = reader.GetDateTime(reader.GetOrdinal("created_on")),
-                    Active = reader.GetBoolean(reader.GetOrdinal("active"))
+                    Id = reader.GetInt32(0),                    // user_id
+                    FirstName = reader.GetString(1),            // user_first_name
+                    LastName = reader.GetString(2),             // user_last_name
+                    Email = reader.GetString(3),                // user_email
+                    Bio = reader.GetString(4),                  // user_bio
+                    Username = reader.GetString(5),             // user_username
+                    Password = reader.GetString(6),             // user_password
+                    ProfileImageUrl = reader.GetString(7),      // user_profile_image_url
+                    CreatedOn = reader.GetDateTime(8),          // user_created_on
+                    Active = reader.GetBoolean(9)               // user_active
                 });
             }
 
