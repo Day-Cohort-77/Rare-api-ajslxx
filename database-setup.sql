@@ -1,3 +1,13 @@
+DROP TABLE IF EXISTS PostTags;
+DROP TABLE IF EXISTS PostReactions;
+DROP TABLE IF EXISTS Comments;
+DROP TABLE IF EXISTS Posts;
+DROP TABLE IF EXISTS Subscriptions;
+DROP TABLE IF EXISTS Users;
+DROP TABLE IF EXISTS Reactions;
+DROP TABLE IF EXISTS Tags;
+DROP TABLE IF EXISTS Categories;
+
 CREATE TABLE "Users" (
   id SERIAL PRIMARY KEY,
   first_name VARCHAR,
@@ -11,13 +21,9 @@ CREATE TABLE "Users" (
   active BOOLEAN
 );
 
-CREATE TABLE "Subscriptions" (
+CREATE TABLE "Categories" (
   id SERIAL PRIMARY KEY,
-  follower_id INTEGER,
-  author_id INTEGER,
-  created_on DATE,
-  FOREIGN KEY(follower_id) REFERENCES "Users"(id),
-  FOREIGN KEY(author_id) REFERENCES "Users"(id)
+  label VARCHAR
 );
 
 CREATE TABLE "Posts" (
@@ -29,7 +35,17 @@ CREATE TABLE "Posts" (
   image_url VARCHAR,
   content VARCHAR,
   approved BOOLEAN,
-  FOREIGN KEY(user_id) REFERENCES "Users"(id)
+  FOREIGN KEY(user_id) REFERENCES "Users"(id),
+  FOREIGN KEY(category_id) REFERENCES "Categories"(id)
+);
+
+CREATE TABLE "Subscriptions" (
+  id SERIAL PRIMARY KEY,
+  follower_id INTEGER,
+  author_id INTEGER,
+  created_on DATE,
+  FOREIGN KEY(follower_id) REFERENCES "Users"(id),
+  FOREIGN KEY(author_id) REFERENCES "Users"(id)
 );
 
 CREATE TABLE "Comments" (
@@ -37,6 +53,7 @@ CREATE TABLE "Comments" (
   post_id INTEGER,
   author_id INTEGER,
   content VARCHAR,
+  created_on DATE,
   FOREIGN KEY(post_id) REFERENCES "Posts"(id),
   FOREIGN KEY(author_id) REFERENCES "Users"(id)
 );
@@ -69,12 +86,3 @@ CREATE TABLE "PostTags" (
   FOREIGN KEY(post_id) REFERENCES "Posts"(id),
   FOREIGN KEY(tag_id) REFERENCES "Tags"(id)
 );
-
-CREATE TABLE "Categories" (
-  id SERIAL PRIMARY KEY,
-  label VARCHAR
-);
-
-INSERT INTO "Categories" (label) VALUES ('News');
-INSERT INTO "Tags" (label) VALUES ('JavaScript');
-INSERT INTO "Reactions" (label, image_url) VALUES ('happy', 'https://pngtree.com/so/happy');
