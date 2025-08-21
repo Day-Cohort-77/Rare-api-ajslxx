@@ -12,6 +12,12 @@ namespace RareAPI.Endpoints
         var users = await db.GetAllUsersAsync();
         return Results.Ok(users);
       });
+
+      app.MapGet("/users/{id}", async (int id, DatabaseService db) =>
+      {
+        var user = await db.GetUserByIdAsync(id);
+        return user is not null ? Results.Ok(user) : Results.NotFound();
+      });
     }
   }
 }

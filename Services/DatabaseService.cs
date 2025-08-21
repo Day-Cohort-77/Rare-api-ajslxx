@@ -162,6 +162,50 @@ namespace RareAPI.Services
             return response;
         }
 
+        public async Task<User?> GetUserByIdAsync(int id)
+        {
+            using var connection = CreateConnection();
+            await connection.OpenAsync();
+
+            using var command = new NpgsqlCommand(
+                @"SELECT 
+                id AS user_id, 
+                first_name AS user_first_name,
+                last_name AS user_last_name, 
+                email AS user_email, 
+                bio AS user_bio, 
+                username AS user_username, 
+                password AS user_password, 
+                profile_image_url AS user_profile_image_url,
+                created_on AS user_created_on,
+                active AS user_active
+                FROM ""Users"" WHERE id = @id;",
+                connection);
+
+            command.Parameters.AddWithValue("@id", id);
+
+            using var reader = await command.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                return new User
+                {
+                    Id = reader.GetInt32(0),                    // user_id
+                    FirstName = reader.GetString(1),            // user_first_name
+                    LastName = reader.GetString(2),             // user_last_name
+                    Email = reader.GetString(3),                // user_email
+                    Bio = reader.GetString(4),                  // user_bio
+                    Username = reader.GetString(5),             // user_username
+                    Password = reader.GetString(6),             // user_password
+                    ProfileImageUrl = reader.GetString(7),      // user_profile_image_url
+                    CreatedOn = reader.GetDateTime(8),          // user_created_on
+                    Active = reader.GetBoolean(9)               // user_active
+                };
+            }
+
+            return null;
+        }
+
        
     }
 }

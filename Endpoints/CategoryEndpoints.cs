@@ -13,6 +13,12 @@ namespace RareAPI.Endpoints
         return Results.Ok(categories);
       });
 
+      app.MapGet("/categories/{id}", async (int id, CategoriesServices categoriesService) =>
+      {
+        var category = await categoriesService.GetCategoryByIdAsync(id);
+        return category is not null ? Results.Ok(category) : Results.NotFound();
+      });
+
       app.MapPost("/categories", async (Category category, CategoriesServices categoriesService) =>
       {
         try
