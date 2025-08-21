@@ -46,10 +46,10 @@ namespace RareAPI.Services
             {
                 return new Comment
                 {
-                    Id = reader.GetInt32(0),           // id
-                    PostId = reader.GetInt32(1),       // post_id
-                    AuthorId = reader.GetInt32(2),     // author_id
-                    Content = reader.GetString(3)      // content
+                    Id = reader.GetInt32(0),           
+                    PostId = reader.GetInt32(1),       
+                    AuthorId = reader.GetInt32(2),     
+                    Content = reader.GetString(3)      
                 };
             }
 
@@ -93,16 +93,16 @@ namespace RareAPI.Services
             {
                 comments.Add(new Comment
                 {
-                    Id = reader.GetInt32(0),        // c.id AS Id
-                    PostId = reader.GetInt32(1),    // c.post_id AS PostId
-                    AuthorId = reader.GetInt32(2),  // c.author_id AS AuthorId
-                    Content = reader.GetString(3)   // c.content AS Content
+                    Id = reader.GetInt32(0),        
+                    PostId = reader.GetInt32(1),    
+                    AuthorId = reader.GetInt32(2),  
+                    Content = reader.GetString(3)   
                 });
             }
             return comments;
         }
 
-        // Get all comments
+       
         public async Task<List<Comment>> GetAllCommentsAsync()
         {
             string sql = @"
@@ -125,16 +125,49 @@ namespace RareAPI.Services
             {
                 comments.Add(new Comment
                 {
-                    Id = reader.GetInt32(0),        // id AS Id
-                    PostId = reader.GetInt32(1),    // post_id AS PostId
-                    AuthorId = reader.GetInt32(2),  // author_id AS AuthorId
-                    Content = reader.GetString(3)   // content AS Content
+                    Id = reader.GetInt32(0),        
+                    PostId = reader.GetInt32(1),    
+                    AuthorId = reader.GetInt32(2),  
+                    Content = reader.GetString(3)   
                 });
             }
             return comments;
         }
 
-        // Update a comment
+        
+        public async Task<Comment?> GetCommentByIdAsync(int commentId)
+        {
+            string sql = @"
+                SELECT 
+                id AS Id,
+                post_id AS PostId,
+                author_id AS AuthorId,
+                content AS Content
+                FROM ""Comments""
+                WHERE id = @id;";
+
+            using var connection = CreateConnection();
+            await connection.OpenAsync();
+
+            using var command = new NpgsqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@id", commentId);
+
+            using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return new Comment
+                {
+                    Id = reader.GetInt32(0),        
+                    PostId = reader.GetInt32(1),    
+                    AuthorId = reader.GetInt32(2),  
+                    Content = reader.GetString(3)   
+                };
+            }
+
+            return null;
+        }
+
+        
         public async Task<Comment?> UpdateCommentAsync(int commentId, string newContent)
         {
             string sql = @"
@@ -155,17 +188,17 @@ namespace RareAPI.Services
             {
                 return new Comment
                 {
-                    Id = reader.GetInt32(0),        // id
-                    PostId = reader.GetInt32(1),    // post_id
-                    AuthorId = reader.GetInt32(2),  // author_id
-                    Content = reader.GetString(3)   // content
+                    Id = reader.GetInt32(0),        
+                    PostId = reader.GetInt32(1),    
+                    AuthorId = reader.GetInt32(2),  
+                    Content = reader.GetString(3)   
                 };
             }
 
-            return null; // Comment not found
+            return null; 
         }
 
-        // Delete a comment
+        
         public async Task<bool> DeleteCommentAsync(int commentId)
         {
             string sql = @"DELETE FROM ""Comments"" WHERE id = @id";

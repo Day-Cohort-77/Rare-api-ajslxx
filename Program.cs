@@ -11,7 +11,7 @@ builder.Services.AddScoped<CommentServices>();
 
 var app = builder.Build();
 
-// Initialize the database
+e
 using (var scope = app.Services.CreateScope())
 {
     var dbService = scope.ServiceProvider.GetRequiredService<DatabaseService>();
@@ -28,7 +28,7 @@ app.MapGet("/users", async (DatabaseService dbService) =>
     return await dbService.GetAllUsersAsync();
 });
 
-// Map all comment endpoints
+
 app.MapCommentEndpoints();
 
 app.Run();

@@ -19,7 +19,7 @@ namespace RareAPI.Services
             return new NpgsqlConnection(_connectionString);
         }
 
-        // Helper method to execute non-query SQL commands
+        
         public async Task ExecuteNonQueryAsync(string sql, Dictionary<string, object>? parameters = null)
         {
             using var connection = CreateConnection();
@@ -39,12 +39,12 @@ namespace RareAPI.Services
 
         public async Task InitializeDatabaseAsync()
         {
-            // Connect to postgres to check/create the database
+            
             var masterConnStr = _connectionString.Replace("Database=RareAPI", "Database=postgres");
             using var masterConnection = new NpgsqlConnection(masterConnStr);
             await masterConnection.OpenAsync();
 
-            // Check if database exists (PostgreSQL database names are case-sensitive)
+            
             using var checkCommand = new NpgsqlCommand(
                 "SELECT 1 FROM pg_database WHERE datname = 'RareAPI'",
                 masterConnection);
@@ -52,21 +52,21 @@ namespace RareAPI.Services
 
             if (exists == null)
             {
-                // Create the database
+                
                 using var createDbCommand = new NpgsqlCommand(
                     "CREATE DATABASE \"RareAPI\"",
                     masterConnection);
                 await createDbCommand.ExecuteNonQueryAsync();
             }
 
-            // Close the master connection before connecting to RareAPI
+            
             await masterConnection.CloseAsync();
 
-            // Now connect to the RareAPI database and check/create tables
+            
             using var rareApiConnection = new NpgsqlConnection(_connectionString);
             await rareApiConnection.OpenAsync();
 
-            // Check if tables already exist
+            
             using var checkTablesCommand = new NpgsqlCommand(
                 "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'Users'",
                 rareApiConnection);
@@ -74,7 +74,7 @@ namespace RareAPI.Services
 
             if (tableExists == 0)
             {
-                // Tables don't exist, create them
+                
                 string sql = File.ReadAllText("database-setup.sql");
                 using var setupCommand = new NpgsqlCommand(sql, rareApiConnection);
                 await setupCommand.ExecuteNonQueryAsync();
@@ -82,17 +82,17 @@ namespace RareAPI.Services
         }
         public async Task SeedDatabaseAsync()
         {
-            // Check if data already exists
+            
             using var connection = CreateConnection();
             await connection.OpenAsync();
 
-            // Check if user table has data
+            
             using var command = new NpgsqlCommand("SELECT COUNT(*) FROM \"Users\"", connection);
             var count = Convert.ToInt32(await command.ExecuteScalarAsync());
 
             if (count > 0)
             {
-                // Data already exists, no need to seed
+                
                 return;
             }
 

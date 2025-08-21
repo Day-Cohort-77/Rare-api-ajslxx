@@ -13,6 +13,20 @@ namespace RareAPI.Endpoints
                 return await commentService.GetAllCommentsAsync();
             });
 
+            // GET a single comment by ID
+            app.MapGet("/comments/{id}", async (int id, CommentServices commentService) =>
+            {
+                var comment = await commentService.GetCommentByIdAsync(id);
+                if (comment != null)
+                {
+                    return Results.Ok(comment);
+                }
+                else
+                {
+                    return Results.NotFound();
+                }
+            });
+
             // GET comments for a specific post
             app.MapGet("/posts/{postId}/comments", async (int postId, CommentServices commentService) =>
             {
@@ -27,9 +41,9 @@ namespace RareAPI.Endpoints
             });
 
             // PUT update a comment
-            app.MapPut("/comments/{id}", async (int id, string newContent, CommentServices commentService) =>
+            app.MapPut("/comments/{id}", async (int id, UpdateCommentRequest request, CommentServices commentService) =>
             {
-                var updatedComment = await commentService.UpdateCommentAsync(id, newContent);
+                var updatedComment = await commentService.UpdateCommentAsync(id, request.Content);
                 if (updatedComment != null)
                 {
                     return Results.Ok(updatedComment);
