@@ -1,8 +1,7 @@
 namespace RareAPI.Models
 {
-    public class Tag
+    public class CreateTagRequest
     {
-        public int Id { get; set; }
         public string Label { get; set; } = string.Empty;
     }
 }
