@@ -1,6 +1,7 @@
-
 using RareAPI.Services;
+
 using RareAPI.Models;
+
 using RareAPI.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,12 +24,12 @@ using (var scope = app.Services.CreateScope())
 app.MapGet("/", () => "Welcome to Rare API!");
 
 
-app.MapGet("/users", async (DatabaseService dbService) =>
-{
-    return await dbService.GetAllUsersAsync();
-});
-
-
+app.MapUserEndpoints();
+app.MapCategoryEndpoints();
 app.MapCommentEndpoints();
-
 app.Run();
+
+
+
+
+
