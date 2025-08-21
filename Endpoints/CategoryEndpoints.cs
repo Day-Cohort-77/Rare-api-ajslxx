@@ -40,12 +40,12 @@ namespace RareAPI.Endpoints
 
           if (deleted)
           {
-            // Return a 204 No Content response
+            
             return Results.NoContent();
           }
           else
           {
-            // Return a 404 Not Found response
+           
             return Results.NotFound();
           }
         }
@@ -60,13 +60,13 @@ namespace RareAPI.Endpoints
         try
         {
 
-          // Set the ID from the route parameter
+          
           updatedCategory.Id = id;
 
-          // Update the Category
+          
           var result = await categoriesService.UpdateCategoryAsync(updatedCategory);
 
-          // Return the updated Category
+          
           return Results.Ok(result);
         }
         catch (Exception ex)

@@ -12,7 +12,7 @@ builder.Services.AddScoped<CategoriesServices>();
 builder.Services.AddScoped<TagService>();
 
 
-// Add CORS services
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
@@ -25,7 +25,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Initialize the database
+
 using (var scope = app.Services.CreateScope())
 {
     var dbService = scope.ServiceProvider.GetRequiredService<DatabaseService>();
@@ -35,10 +35,10 @@ using (var scope = app.Services.CreateScope())
     await dbService.SeedDatabaseAsync();
 }
 
-// Use CORS middleware
+
 app.UseCors("AllowReactApp");
 
-// Define API endpoints
+
 app.MapGet("/", () => "Welcome to Rare API!");
 app.MapUserEndpoints();
 app.MapPostEndpoints();

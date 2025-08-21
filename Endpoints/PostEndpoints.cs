@@ -36,13 +36,13 @@ namespace RareAPI.Endpoints
             {
                 try
                 {
-                    // Set the ID from the route parameter
+                    
                     updatedPost.Id = id;
 
-                    // Update the Post
+                    
                     var result = await postService.UpdatePostAsync(updatedPost);
 
-                    // Return the updated Post or NotFound if it doesn't exist
+                    
                     return result is not null ? Results.Ok(result) : Results.NotFound();
                 }
                 catch (Exception ex)
@@ -59,12 +59,12 @@ namespace RareAPI.Endpoints
 
                     if (deleted)
                     {
-                        // Return a 204 No Content response
+                        
                         return Results.NoContent();
                     }
                     else
                     {
-                        // Return a 404 Not Found response
+                        
                         return Results.NotFound();
                     }
                 }

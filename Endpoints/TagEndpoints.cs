@@ -28,14 +28,14 @@ namespace RareAPI.Endpoints
         return Results.NoContent();
       });
 
-      // GET single tag by id
+      
       app.MapGet("/tags/{id}", async (TagService tagService, int id) =>
       {
         var tag = await tagService.GetTagByIdAsync(id);
         return Results.Ok(tag);
       });
 
-      // PUT update tag by id
+     
       app.MapPut("/tags/{id}", async (TagService tagService, int id, Tag updatedTag) =>
       {
         await tagService.UpdateTagAsync(id, updatedTag.Label);

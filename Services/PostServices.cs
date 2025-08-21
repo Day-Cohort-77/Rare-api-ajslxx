@@ -42,14 +42,14 @@ namespace RareAPI.Services
             {
                 posts.Add(new Post
                 {
-                    Id = reader.GetInt32(0),                    // Id
-                    UserId = reader.GetInt32(1),                // UserId  
-                    CategoryId = reader.GetInt32(2),            // CategoryId
-                    Title = reader.GetString(3),                // Title
-                    PublicationDate = reader.GetDateTime(4),    // PublicationDate
-                    ImageUrl = reader.GetString(5),             // ImageUrl
-                    Content = reader.GetString(6),              // Content
-                    Approved = reader.GetBoolean(7)             // Approved
+                    Id = reader.GetInt32(0),                    
+                    UserId = reader.GetInt32(1),                
+                    CategoryId = reader.GetInt32(2),           
+                    Title = reader.GetString(3),               
+                    PublicationDate = reader.GetDateTime(4),    
+                    ImageUrl = reader.GetString(5),             
+                    Content = reader.GetString(6),              
+                    Approved = reader.GetBoolean(7)             
                 });
             }
             return posts;
@@ -73,7 +73,7 @@ namespace RareAPI.Services
             command.Parameters.AddWithValue("@content", post.Content);
             command.Parameters.AddWithValue("@approved", post.Approved);
 
-            // Execute the command and get the generated ID
+            
             post.Id = Convert.ToInt32(await command.ExecuteScalarAsync());
 
             return post;
@@ -106,10 +106,10 @@ namespace RareAPI.Services
             command.Parameters.AddWithValue("@approved", post.Approved);
             command.Parameters.AddWithValue("@id", post.Id);
 
-            // Execute the command
+           
             await command.ExecuteNonQueryAsync();
 
-            // Retrieve and return the updated category
+            
             return await GetPostByIdAsync(post.Id);
         }
 
