@@ -1,10 +1,14 @@
 using RareAPI.Services;
+
+using RareAPI.Models;
+
 using RareAPI.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSingleton<DatabaseService>();
+builder.Services.AddScoped<CommentServices>();
 
 var app = builder.Build();
 
@@ -16,10 +20,16 @@ using (var scope = app.Services.CreateScope())
     await dbService.SeedDatabaseAsync();
 }
 
-// Define API endpoints
+
 app.MapGet("/", () => "Welcome to Rare API!");
+
 
 app.MapUserEndpoints();
 app.MapCategoryEndpoints();
-
+app.MapCommentEndpoints();
 app.Run();
+
+
+
+
+
