@@ -18,7 +18,7 @@ namespace RareAPI.Services
             return new NpgsqlConnection(_connectionString);
         }
 
-        // Helper method to execute non-query SQL commands
+        
         public async Task ExecuteNonQueryAsync(string sql, Dictionary<string, object>? parameters = null)
         {
             using var connection = CreateConnection();
@@ -38,12 +38,12 @@ namespace RareAPI.Services
 
         public async Task InitializeDatabaseAsync()
         {
-            // Connect to postgres to check/create the database
+            
             var masterConnStr = _connectionString.Replace("Database=RareAPI", "Database=postgres");
             using var masterConnection = new NpgsqlConnection(masterConnStr);
             await masterConnection.OpenAsync();
 
-            // Check if database exists (PostgreSQL database names are case-sensitive)
+            
             using var checkCommand = new NpgsqlCommand(
                 "SELECT 1 FROM pg_database WHERE datname = 'RareAPI'",
                 masterConnection);
@@ -51,19 +51,22 @@ namespace RareAPI.Services
 
             if (exists == null)
             {
-                // Create the database
+                
                 using var createDbCommand = new NpgsqlCommand(
                     "CREATE DATABASE \"RareAPI\"",
                     masterConnection);
                 await createDbCommand.ExecuteNonQueryAsync();
             }
 
-            // Close the master connection before connecting to RareAPI
+            
             await masterConnection.CloseAsync();
 
-            // Now connect to the RareAPI database and check/create tables
+            
             using var rareApiConnection = new NpgsqlConnection(_connectionString);
             await rareApiConnection.OpenAsync();
+
+
+            
 
             // Check if tables already exist
             using var checkTablesCommand = new NpgsqlCommand(
@@ -78,15 +81,16 @@ namespace RareAPI.Services
                 using var setupCommand = new NpgsqlCommand(sql, rareApiConnection);
                 await setupCommand.ExecuteNonQueryAsync();
             }
+
         }
 
         public async Task SeedDatabaseAsync()
         {
-            // Check if data already exists
+            
             using var connection = CreateConnection();
             await connection.OpenAsync();
 
-            // Check if user table has data
+            
             using var command = new NpgsqlCommand("SELECT COUNT(*) FROM \"Users\"", connection);
             var count = Convert.ToInt32(await command.ExecuteScalarAsync());
             // Check if tag table has data
@@ -95,7 +99,7 @@ namespace RareAPI.Services
 
             if (count > 0 || tagCount > 0)
             {
-                // Data already exists, no need to seed
+                
                 return;
             }
             // Insert sample data into Users table
@@ -120,7 +124,26 @@ namespace RareAPI.Services
             using var connection = CreateConnection();
             await connection.OpenAsync();
 
+
+            using var command = new NpgsqlCommand(
+              @"SELECT 
+                id AS user_id, 
+                first_name AS user_first_name,
+                last_name AS user_last_name, 
+                email AS user_email, 
+                bio AS user_bio, 
+                username AS user_username, 
+                password AS user_password, 
+                profile_image_url AS user_profile_image_url,
+                created_on AS user_created_on,
+                active AS user_active
+                FROM ""Users"";",
+               connection);
+
+
+
             using var command = new NpgsqlCommand(@"SELECT * FROM ""Users"";", connection);
+
             using var reader = await command.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
@@ -142,5 +165,50 @@ namespace RareAPI.Services
 
             return response;
         }
+<
+       
+
+        public async Task<List<Post>> GetPostsAsync()
+        {
+            using var connection = CreateConnection();
+            await connection.OpenAsync();
+
+            using var command = new NpgsqlCommand(
+                @"SELECT 
+                id AS Id,
+                user_id AS UserId,
+                category_id AS CategoryId,
+                title AS Title,
+                publication_date AS PublicationDate,
+                image_url AS ImageUrl,
+                content AS Content,
+                approved AS Approved
+                FROM ""Posts"";",
+                connection);
+
+            using var reader = await command.ExecuteReaderAsync();
+
+            var posts = new List<Post>();
+            while (await reader.ReadAsync())
+            {
+                posts.Add(new Post
+                {
+                    Id = reader.GetInt32("Id"),
+                    UserId = reader.GetInt32("UserId"),
+                    CategoryId = reader.GetInt32("CategoryId"),
+                    Title = reader.GetString("Title"),
+                    PublicationDate = reader.GetDateTime("PublicationDate"),
+                    ImageUrl = reader.GetString("ImageUrl"),
+                    Content = reader.GetString("Content"),
+                    Approved = reader.GetBoolean("Approved")
+                });
+            }
+            return posts;
+        }
     }
 }
+
+
+    }
+}
+
