@@ -11,7 +11,7 @@ builder.Services.AddScoped<CommentServices>();
 
 var app = builder.Build();
 
-e
+// Initialize the database
 using (var scope = app.Services.CreateScope())
 {
     var dbService = scope.ServiceProvider.GetRequiredService<DatabaseService>();

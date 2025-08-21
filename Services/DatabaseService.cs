@@ -67,18 +67,6 @@ namespace RareAPI.Services
             await rareApiConnection.OpenAsync();
 
             
-            using var checkTablesCommand = new NpgsqlCommand(
-                "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'Users'",
-                rareApiConnection);
-            var tableExists = (long)(await checkTablesCommand.ExecuteScalarAsync() ?? 0L);
-
-            if (tableExists == 0)
-            {
-                
-                string sql = File.ReadAllText("database-setup.sql");
-                using var setupCommand = new NpgsqlCommand(sql, rareApiConnection);
-                await setupCommand.ExecuteNonQueryAsync();
-            }
         }
         public async Task SeedDatabaseAsync()
         {
@@ -147,35 +135,7 @@ namespace RareAPI.Services
 
             return response;
         }
-        public async Task<List<Comment>> GetAllCommentsAsync()
-        {
-            using var connection = CreateConnection();
-            await connection.OpenAsync();
-
-            using var command = new NpgsqlCommand(
-                @"SELECT 
-                id AS Id,
-                post_id AS PostId,
-                author_id AS AuthorId,
-                content AS Content
-                FROM ""Comments"";",
-                connection);
-
-            using var reader = await command.ExecuteReaderAsync();
-
-            var comments = new List<Comment>();
-            while (await reader.ReadAsync())
-            {
-                comments.Add(new Comment
-                {
-                    Id = reader.GetInt32("Id"),
-                    PostId = reader.GetInt32("PostId"),
-                    AuthorId = reader.GetInt32("AuthorId"),
-                    Content = reader.GetString("Content")
-                });
-            }
-            return comments;
-        }
+       
 
         public async Task<List<Post>> GetPostsAsync()
         {
