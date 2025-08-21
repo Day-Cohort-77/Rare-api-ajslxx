@@ -7,17 +7,17 @@ namespace RareAPI.Endpoints
   {
     public static void MapCategoryEndpoints(this WebApplication app)
     {
-      app.MapGet("/categories", async (DatabaseService db) =>
+      app.MapGet("/categories", async (CategoriesServices categoriesService) =>
       {
-        var users = await db.GetAllCategoriesAsync();
-        return Results.Ok(users);
+        var categories = await categoriesService.GetAllCategoriesAsync();
+        return Results.Ok(categories);
       });
 
-      app.MapPost("/categories", async (Category category, DatabaseService db) =>
+      app.MapPost("/categories", async (Category category, CategoriesServices categoriesService) =>
       {
         try
         {
-          var newCategory = await db.CreateCategoryAsync(category);
+          var newCategory = await categoriesService.CreateCategoryAsync(category);
           return Results.Created($"/categories/{category.Id}", newCategory);
         }
         catch (Exception ex)
@@ -26,11 +26,11 @@ namespace RareAPI.Endpoints
         }
       });
 
-      app.MapDelete("/categories/{id}", async (int id, DatabaseService db) =>
+      app.MapDelete("/categories/{id}", async (int id, CategoriesServices categoriesService) =>
       {
         try
         {
-          bool deleted = await db.DeleteCategoryAsync(id);
+          bool deleted = await categoriesService.DeleteCategoryAsync(id);
 
           if (deleted)
           {
@@ -49,7 +49,7 @@ namespace RareAPI.Endpoints
         }
       });
 
-      app.MapPut("/categories/{id}", async (int id, Category updatedCategory, DatabaseService db) =>
+      app.MapPut("/categories/{id}", async (int id, Category updatedCategory, CategoriesServices categoriesService) =>
       {
         try
         {
@@ -58,7 +58,7 @@ namespace RareAPI.Endpoints
           updatedCategory.Id = id;
 
           // Update the Category
-          var result = await db.UpdateCategoryAsync(updatedCategory);
+          var result = await categoriesService.UpdateCategoryAsync(updatedCategory);
 
           // Return the updated Category
           return Results.Ok(result);

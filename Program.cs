@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSingleton<DatabaseService>();
 builder.Services.AddScoped<CommentServices>();
+builder.Services.AddScoped<CategoriesServices>();
 
 var app = builder.Build();
 
