@@ -1,8 +1,5 @@
 using RareAPI.Services;
-using RareAPI.Endpoints;
-
 using RareAPI.Models;
-
 using RareAPI.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,13 +33,7 @@ using (var scope = app.Services.CreateScope())
 
 
     await dbService.SeedDatabaseAsync();
-
 }
-
-
-
-app.MapGet("/", () => "Welcome to Rare API!");
-
 
 // Use CORS middleware
 app.UseCors("AllowReactApp");

@@ -42,14 +42,14 @@ namespace RareAPI.Services
             {
                 posts.Add(new Post
                 {
-                    Id = reader.GetInt32("Id"),
-                    UserId = reader.GetInt32("UserId"),
-                    CategoryId = reader.GetInt32("CategoryId"),
-                    Title = reader.GetString("Title"),
-                    PublicationDate = reader.GetDateTime("PublicationDate"),
-                    ImageUrl = reader.GetString("ImageUrl"),
-                    Content = reader.GetString("Content"),
-                    Approved = reader.GetBoolean("Approved")
+                    Id = reader.GetInt32(0),                    // Id
+                    UserId = reader.GetInt32(1),                // UserId  
+                    CategoryId = reader.GetInt32(2),            // CategoryId
+                    Title = reader.GetString(3),                // Title
+                    PublicationDate = reader.GetDateTime(4),    // PublicationDate
+                    ImageUrl = reader.GetString(5),             // ImageUrl
+                    Content = reader.GetString(6),              // Content
+                    Approved = reader.GetBoolean(7)             // Approved
                 });
             }
             return posts;
@@ -79,7 +79,7 @@ namespace RareAPI.Services
             return post;
         }
 
-        public async Task<Post> UpdatePostAsync(Post post)
+        public async Task<Post?> UpdatePostAsync(Post post)
         {
             using var connection = CreateConnection();
             await connection.OpenAsync();
