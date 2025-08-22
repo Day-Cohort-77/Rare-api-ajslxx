@@ -100,9 +100,10 @@ namespace RareAPI.Services
             {
                 await ExecuteNonQueryAsync(@"
                     INSERT INTO ""Users"" (first_name, last_name, email, bio, username, password, profile_image_url, created_on, active) VALUES
-                    ('Billy', 'Bob', 'billy@bob.com', 'I am Billy Bob', 'BillyBob', 'mycoolpass', 'https://www.thedailybeast.com/resizer/7-n47tS_FIUHO6A0UWE2XxsDki0=/arc-photo-thedailybeast/arc2-prod/public/GBJAOT4VF5IM7BLNH2I6MWRKGU.png', (TO_DATE('08/12/2025', 'MM/DD/YYYY')), true),
-                    ('Jimmy', 'John', 'jimmy@john.com', 'I am Jimmy John', 'JimmyJohn', 'ExcellentPassword', 'https://hips.hearstapps.com/hmg-prod/images/screenshot-2024-10-28-at-4-38-05-pm-671ff63778f27.png?crop=0.494xw:1.00xh;0.306xw,0&resize=1200:*', (TO_DATE('07/01/2022', 'MM/DD/YYYY')), true);
-                ");
+                    ('test', 'test', 'test@test.com', 'test', 'test', 'test', 'test', (TO_DATE('08/12/2025', 'MM/DD/YYYY')), true),
+                    ('test2', 'test2', 'test2@test.com', 'test2', 'test2', 'test2', 'test2', (TO_DATE('08/02/2025', 'MM/DD/YYYY')), true),
+                    ('test3', 'test3', 'test3@test.com', 'test3', 'test3', 'test3', 'test3', (TO_DATE('08/01/2025', 'MM/DD/YYYY')), true)
+                    ");
             }
 
             // Seed Tags if empty
