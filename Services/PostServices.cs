@@ -17,121 +17,68 @@ namespace RareAPI.Services
         {
             return _databaseService.CreateConnection();
         }
+
         public async Task<List<Post>> GetAllPostsAsync()
         {
+            var posts = new List<Post>();
+
             using var connection = CreateConnection();
             await connection.OpenAsync();
 
-            using var command = new NpgsqlCommand(
-                @"SELECT 
-                id AS Id,
-                user_id AS UserId,
-                category_id AS CategoryId,
-                title AS Title,
-                publication_date AS PublicationDate,
-                image_url AS ImageUrl,
-                content AS Content,
-                approved AS Approved
-                FROM ""Posts"";",
-                connection);
-
+            using var command = new NpgsqlCommand(@"
+                SELECT 
+                    id, 
+                    user_id, 
+                    category_id, 
+                    title, 
+                    publication_date, 
+                    image_url, 
+                    content, 
+                    approved 
+                FROM ""Posts"" 
+                ORDER BY publication_date DESC", connection);
+            
             using var reader = await command.ExecuteReaderAsync();
 
-            var posts = new List<Post>();
             while (await reader.ReadAsync())
             {
                 posts.Add(new Post
                 {
-                    Id = reader.GetInt32(0),                    
-                    UserId = reader.GetInt32(1),                
-                    CategoryId = reader.GetInt32(2),           
-                    Title = reader.GetString(3),               
-                    PublicationDate = reader.GetDateTime(4),    
-                    ImageUrl = reader.GetString(5),             
-                    Content = reader.GetString(6),              
-                    Approved = reader.GetBoolean(7)             
+                    Id = reader.GetInt32(0),
+                    UserId = reader.GetInt32(1),
+                    CategoryId = reader.GetInt32(2),
+                    Title = reader.GetString(3),
+                    PublicationDate = reader.GetDateTime(4),
+                    ImageUrl = reader.GetString(5),
+                    Content = reader.GetString(6),
+                    Approved = reader.GetBoolean(7)
                 });
             }
+
             return posts;
         }
-        public async Task<Post> CreatePostAsync(Post post)
+
+        public async Task<Post?> GetPostByIdAsync(int id)
         {
             using var connection = CreateConnection();
             await connection.OpenAsync();
 
-            using var command = new NpgsqlCommand(
-                @"INSERT INTO ""Posts"" (""user_id"", ""category_id"", ""title"", ""publication_date"", ""image_url"", ""content"", ""approved"")
-                    VALUES (@user_id, @category_id, @title, @publication_date, @image_url, @content, @approved)
-                    RETURNING id;",
-                connection);
-
-            command.Parameters.AddWithValue("@user_id", post.UserId);
-            command.Parameters.AddWithValue("@category_id", post.CategoryId);
-            command.Parameters.AddWithValue("@title", post.Title);
-            command.Parameters.AddWithValue("@publication_date", post.PublicationDate);
-            command.Parameters.AddWithValue("@image_url", post.ImageUrl);
-            command.Parameters.AddWithValue("@content", post.Content);
-            command.Parameters.AddWithValue("@approved", post.Approved);
-
+            var sql = @"
+                SELECT 
+                    id, 
+                    user_id, 
+                    category_id, 
+                    title, 
+                    publication_date, 
+                    image_url, 
+                    content, 
+                    approved 
+                FROM ""Posts"" 
+                WHERE id = @id";
             
-            post.Id = Convert.ToInt32(await command.ExecuteScalarAsync());
-
-            return post;
-        }
-
-        public async Task<Post?> UpdatePostAsync(Post post)
-        {
-            using var connection = CreateConnection();
-            await connection.OpenAsync();
-
-
-            using var command = new NpgsqlCommand(
-          @"UPDATE ""Posts""
-            SET ""user_id"" = @user_id,
-            ""category_id"" = @category_id,
-            ""title"" = @title,
-            ""publication_date"" = @publication_date,
-            ""image_url"" = @image_url,
-            ""content"" = @content,
-             ""approved"" = @approved
-            WHERE ""id"" = @id",
- connection);
-
-            command.Parameters.AddWithValue("@user_id", post.UserId);
-            command.Parameters.AddWithValue("@category_id", post.CategoryId);
-            command.Parameters.AddWithValue("@title", post.Title);
-            command.Parameters.AddWithValue("@publication_date", post.PublicationDate);
-            command.Parameters.AddWithValue("@image_url", post.ImageUrl);
-            command.Parameters.AddWithValue("@content", post.Content);
-            command.Parameters.AddWithValue("@approved", post.Approved);
-            command.Parameters.AddWithValue("@id", post.Id);
-
-           
-            await command.ExecuteNonQueryAsync();
-
-            
-            return await GetPostByIdAsync(post.Id);
-        }
-
-     public async Task<Post?> GetPostByIdAsync(int postId)
-        {
-            string sql = @"
-                SELECT
-                id AS Id,
-                user_id AS UserId,
-                category_id AS CategoryId,
-                title AS Title,
-                publication_date AS PublicationDate,
-                image_url AS ImageUrl,
-                content AS Content,
-                approved AS Approved
-
-                FROM ""Post""
-                WHERE id = @id;";
-            using var connection = CreateConnection();
-            await connection.OpenAsync();
             using var command = new NpgsqlCommand(sql, connection);
-            command.Parameters.AddWithValue("@id", postId);
+            command.Parameters.AddWithValue("@id", id);
+
             using var reader = await command.ExecuteReaderAsync();
             if (await reader.ReadAsync())
             {
@@ -147,26 +94,144 @@ namespace RareAPI.Services
                     Approved = reader.GetBoolean(7)
                 };
             }
+
             return null;
         }
+
+        public async Task<Post?> CreatePostAsync(Post newPost)
+        {
+            using var connection = CreateConnection();
+            await connection.OpenAsync();
+
+            var insertSql = @"
+                INSERT INTO ""Posts"" (user_id, category_id, title, publication_date, image_url, content, approved)
+                VALUES (@userId, @categoryId, @title, @publicationDate, @imageUrl, @content, @approved)
+                RETURNING id, user_id, category_id, title, publication_date, image_url, content, approved";
+
+            using var command = new NpgsqlCommand(insertSql, connection);
+            command.Parameters.AddWithValue("@userId", newPost.UserId);
+            command.Parameters.AddWithValue("@categoryId", newPost.CategoryId);
+            command.Parameters.AddWithValue("@title", newPost.Title);
+            command.Parameters.AddWithValue("@publicationDate", newPost.PublicationDate);
+            command.Parameters.AddWithValue("@imageUrl", newPost.ImageUrl);
+            command.Parameters.AddWithValue("@content", newPost.Content);
+            command.Parameters.AddWithValue("@approved", newPost.Approved);
+
+            using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return new Post
+                {
+                    Id = reader.GetInt32(0),
+                    UserId = reader.GetInt32(1),
+                    CategoryId = reader.GetInt32(2),
+                    Title = reader.GetString(3),
+                    PublicationDate = reader.GetDateTime(4),
+                    ImageUrl = reader.GetString(5),
+                    Content = reader.GetString(6),
+                    Approved = reader.GetBoolean(7)
+                };
+            }
+
+            return null;
+        }
+
+        public async Task<Post?> UpdatePostAsync(int id, Post updatedPost)
+        {
+            using var connection = CreateConnection();
+            await connection.OpenAsync();
+
+            var updateSql = @"
+                UPDATE ""Posts""
+                SET user_id = @userId, category_id = @categoryId, title = @title, 
+                    publication_date = @publicationDate, image_url = @imageUrl, 
+                    content = @content, approved = @approved
+                WHERE id = @id
+                RETURNING id, user_id, category_id, title, publication_date, image_url, content, approved";
+
+            using var command = new NpgsqlCommand(updateSql, connection);
+            command.Parameters.AddWithValue("@id", id);
+            command.Parameters.AddWithValue("@userId", updatedPost.UserId);
+            command.Parameters.AddWithValue("@categoryId", updatedPost.CategoryId);
+            command.Parameters.AddWithValue("@title", updatedPost.Title);
+            command.Parameters.AddWithValue("@publicationDate", updatedPost.PublicationDate);
+            command.Parameters.AddWithValue("@imageUrl", updatedPost.ImageUrl);
+            command.Parameters.AddWithValue("@content", updatedPost.Content);
+            command.Parameters.AddWithValue("@approved", updatedPost.Approved);
+
+            using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return new Post
+                {
+                    Id = reader.GetInt32(0),
+                    UserId = reader.GetInt32(1),
+                    CategoryId = reader.GetInt32(2),
+                    Title = reader.GetString(3),
+                    PublicationDate = reader.GetDateTime(4),
+                    ImageUrl = reader.GetString(5),
+                    Content = reader.GetString(6),
+                    Approved = reader.GetBoolean(7)
+                };
+            }
+
+            return null;
+        }
+
         public async Task<bool> DeletePostAsync(int id)
         {
             using var connection = CreateConnection();
             await connection.OpenAsync();
 
-            using var command = new NpgsqlCommand(
-                @"DELETE FROM ""Posts"" WHERE ""id"" = @id;",
-                connection);
-
+            var deleteSql = "DELETE FROM \"Posts\" WHERE id = @id";
+            using var command = new NpgsqlCommand(deleteSql, connection);
             command.Parameters.AddWithValue("@id", id);
 
-            int rowsAffected = await command.ExecuteNonQueryAsync();
-
+            var rowsAffected = await command.ExecuteNonQueryAsync();
             return rowsAffected > 0;
         }
 
+        public async Task<List<Post>> GetPostsByUserIdAsync(int userId)
+        {
+            var posts = new List<Post>();
 
+            using var connection = CreateConnection();
+            await connection.OpenAsync();
 
+            var sql = @"
+                SELECT 
+                    id, 
+                    user_id, 
+                    category_id, 
+                    title, 
+                    publication_date, 
+                    image_url, 
+                    content, 
+                    approved 
+                FROM ""Posts"" 
+                WHERE user_id = @userId 
+                ORDER BY publication_date DESC";
+            
+            using var command = new NpgsqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@userId", userId);
 
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                posts.Add(new Post
+                {
+                    Id = reader.GetInt32(0),
+                    UserId = reader.GetInt32(1),
+                    CategoryId = reader.GetInt32(2),
+                    Title = reader.GetString(3),
+                    PublicationDate = reader.GetDateTime(4),
+                    ImageUrl = reader.GetString(5),
+                    Content = reader.GetString(6),
+                    Approved = reader.GetBoolean(7)
+                });
+            }
+
+            return posts;
+        }
     }
 }

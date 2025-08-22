@@ -6,6 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSingleton<DatabaseService>();
+builder.Services.AddScoped<UserServices>();
 builder.Services.AddScoped<PostServices>();
 builder.Services.AddScoped<CommentServices>();
 builder.Services.AddScoped<CategoriesServices>();
@@ -40,6 +41,7 @@ app.UseCors("AllowReactApp");
 
 
 app.MapGet("/", () => "Welcome to Rare API!");
+app.MapAuthEndpoints();
 app.MapUserEndpoints();
 app.MapPostEndpoints();
 app.MapTagEndpoints();
