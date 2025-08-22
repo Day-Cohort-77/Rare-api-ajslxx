@@ -90,31 +90,79 @@ namespace RareAPI.Services
             using var connection = CreateConnection();
             await connection.OpenAsync();
 
+            // Check individual tables and seed each separately
             
-            using var command = new NpgsqlCommand("SELECT COUNT(*) FROM \"Users\"", connection);
-            var count = Convert.ToInt32(await command.ExecuteScalarAsync());
-           
+            // Seed Users if empty
+            using var userCommand = new NpgsqlCommand("SELECT COUNT(*) FROM \"Users\"", connection);
+            var userCount = Convert.ToInt32(await userCommand.ExecuteScalarAsync());
+            
+            if (userCount == 0)
+            {
+                await ExecuteNonQueryAsync(@"
+                    INSERT INTO ""Users"" (first_name, last_name, email, bio, username, password, profile_image_url, created_on, active) VALUES
+                    ('Billy', 'Bob', 'billy@bob.com', 'I am Billy Bob', 'BillyBob', 'mycoolpass', 'https://www.thedailybeast.com/resizer/7-n47tS_FIUHO6A0UWE2XxsDki0=/arc-photo-thedailybeast/arc2-prod/public/GBJAOT4VF5IM7BLNH2I6MWRKGU.png', (TO_DATE('08/12/2025', 'MM/DD/YYYY')), true),
+                    ('Jimmy', 'John', 'jimmy@john.com', 'I am Jimmy John', 'JimmyJohn', 'ExcellentPassword', 'https://hips.hearstapps.com/hmg-prod/images/screenshot-2024-10-28-at-4-38-05-pm-671ff63778f27.png?crop=0.494xw:1.00xh;0.306xw,0&resize=1200:*', (TO_DATE('07/01/2022', 'MM/DD/YYYY')), true);
+                ");
+            }
+
+            // Seed Tags if empty
             using var tagCommand = new NpgsqlCommand("SELECT COUNT(*) FROM \"Tags\"", connection);
             var tagCount = Convert.ToInt32(await tagCommand.ExecuteScalarAsync());
-
-            if (count > 0 || tagCount > 0)
+            
+            if (tagCount == 0)
             {
-                
-                return;
+                await ExecuteNonQueryAsync(@"
+                    INSERT INTO ""Tags"" (label) VALUES
+                    ('#meme'),
+                    ('#fitness'),
+                    ('#beach');
+                ");
             }
+
+            // Seed Categories if empty
+            using var categoryCommand = new NpgsqlCommand("SELECT COUNT(*) FROM \"Categories\"", connection);
+            var categoryCount = Convert.ToInt32(await categoryCommand.ExecuteScalarAsync());
             
-            await ExecuteNonQueryAsync(@"
-                INSERT INTO ""Users"" (first_name, last_name, email, bio, username, password, profile_image_url, created_on, active) VALUES
-                ('Billy', 'Bob', 'billy@bob.com', 'I am Billy Bob', 'BillyBob', 'mycoolpass', 'https://www.thedailybeast.com/resizer/7-n47tS_FIUHO6A0UWE2XxsDki0=/arc-photo-thedailybeast/arc2-prod/public/GBJAOT4VF5IM7BLNH2I6MWRKGU.png', (TO_DATE('08/12/2025', 'MM/DD/YYYY')), true),
-                ('Jimmy', 'John', 'jimmy@john.com', 'I am Jimmy John', 'JimmyJohn', 'ExcellentPassword', 'https://hips.hearstapps.com/hmg-prod/images/screenshot-2024-10-28-at-4-38-05-pm-671ff63778f27.png?crop=0.494xw:1.00xh;0.306xw,0&resize=1200:*', (TO_DATE('07/01/2022', 'MM/DD/YYYY')), true);
-            ");
+            if (categoryCount == 0)
+            {
+                await ExecuteNonQueryAsync(@"
+                    INSERT INTO ""Categories"" (label) VALUES
+                    ('News'),
+                    ('Sports'),
+                    ('Entertainment'),
+                    ('Gaming'),
+                    ('Music'),
+                    ('Movies');
+                ");
+            }
+
+            // Seed Posts if empty
+            using var postCommand = new NpgsqlCommand("SELECT COUNT(*) FROM \"Posts\"", connection);
+            var postCount = Convert.ToInt32(await postCommand.ExecuteScalarAsync());
             
-            await ExecuteNonQueryAsync(@"
-                INSERT INTO ""Tags"" (label) VALUES
-                ('#meme'),
-                ('#fitness'),
-                ('#beach');
-            ");
+            if (postCount == 0)
+            {
+                await ExecuteNonQueryAsync(@"
+                    INSERT INTO ""Posts"" (user_id, category_id, title, publication_date, image_url, content, approved) VALUES
+                    (1, 1, 'First Post', '2025-08-12'::DATE, 'https://example.com/image1.png', 'Hello World! This is my first post.', true),
+                    (2, 2, 'Second Post', '2022-07-01'::DATE, 'https://example.com/image2.png', 'Another post about sports!', true),
+                    (1, 3, 'Entertainment News', '2025-08-11'::DATE, 'https://example.com/image3.png', 'Latest entertainment updates.', false);
+                ");
+            }
+
+            // Seed Comments if empty  
+            using var commentCommand = new NpgsqlCommand("SELECT COUNT(*) FROM \"Comments\"", connection);
+            var commentCount = Convert.ToInt32(await commentCommand.ExecuteScalarAsync());
+            
+            if (commentCount == 0)
+            {
+                await ExecuteNonQueryAsync(@"
+                    INSERT INTO ""Comments"" (post_id, author_id, content) VALUES
+                    (1, 2, 'Great first post!'),
+                    (1, 1, 'Thanks for the comment!'),
+                    (2, 1, 'Love this sports content.');
+                ");
+            }
         }
 
         public async Task<List<User>> GetAllUsersAsync()
