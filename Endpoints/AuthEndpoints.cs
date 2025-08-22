@@ -22,10 +22,12 @@ namespace RareAPI.Endpoints
                     var createdUser = await userService.CreateUserAsync(newUser);
                     if (createdUser != null)
                     {
-                        return Results.Created($"/users/{createdUser.Id}", createdUser);
+                        // Return consistent shape with login
+                        return Results.Ok(new { valid = true, token = createdUser.Id });
                     }
 
                     return Results.BadRequest(new { message = "Failed to create user" });
+
                 }
                 catch (Exception ex)
                 {
