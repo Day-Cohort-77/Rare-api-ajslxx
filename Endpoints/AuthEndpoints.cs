@@ -5,21 +5,21 @@ namespace RareAPI.Endpoints
 {
     public static class AuthEndpoints
     {
-        public static void MapAuthEndpoints(this IEndpointRouteBuilder endpoints)
+        public static void MapAuthEndpoints(this WebApplication app)
         {
             // POST /register
-            endpoints.MapPost("/register", async (User newUser, DatabaseService databaseService) =>
+            app.MapPost("/register", async (User newUser, UserServices userService) =>
             {
                 try
                 {
                     // Check if user already exists
-                    if (await databaseService.UserExistsAsync(newUser.Email))
+                    if (await userService.UserExistsAsync(newUser.Email))
                     {
                         return Results.BadRequest(new { message = "User with this email already exists" });
                     }
 
                     // Create new user
-                    var createdUser = await databaseService.CreateUserAsync(newUser);
+                    var createdUser = await userService.CreateUserAsync(newUser);
                     if (createdUser != null)
                     {
                         return Results.Created($"/users/{createdUser.Id}", createdUser);
@@ -34,11 +34,11 @@ namespace RareAPI.Endpoints
             });
 
             // POST /login
-            endpoints.MapPost("/login", async (LoginRequest loginRequest, DatabaseService databaseService) =>
+            app.MapPost("/login", async (LoginRequest loginRequest, UserServices userService) =>
             {
                 try
                 {
-                    var (userId, storedPassword) = await databaseService.GetUserCredentialsAsync(loginRequest.Email);
+                    var (userId, storedPassword) = await userService.GetUserCredentialsAsync(loginRequest.Email);
 
                     if (userId.HasValue && storedPassword != null)
                     {
@@ -50,24 +50,6 @@ namespace RareAPI.Endpoints
                     }
 
                     return Results.Ok(new { valid = false, token = (int?)null });
-                }
-                catch (Exception ex)
-                {
-                    return Results.Problem($"An error occurred: {ex.Message}");
-                }
-            });
-
-            // GET /users/{id}
-            endpoints.MapGet("/users/{id:int}", async (int id, DatabaseService databaseService) =>
-            {
-                try
-                {
-                    var user = await databaseService.GetUserByIdAsync(id);
-                    if (user != null)
-                    {
-                        return Results.Ok(user);
-                    }
-                    return Results.NotFound(new { message = "User not found" });
                 }
                 catch (Exception ex)
                 {

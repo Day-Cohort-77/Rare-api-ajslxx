@@ -18,7 +18,7 @@ namespace RareAPI.Endpoints
                 try
                 {
                     var newPost = await postService.CreatePostAsync(post);
-                    return Results.Created($"/posts/{newPost.Id}", newPost);
+                    return newPost is not null ? Results.Created($"/posts/{newPost.Id}", newPost) : Results.BadRequest("Failed to create post");
                 }
                 catch (Exception ex)
                 {
@@ -36,13 +36,7 @@ namespace RareAPI.Endpoints
             {
                 try
                 {
-                    
-                    updatedPost.Id = id;
-
-                    
-                    var result = await postService.UpdatePostAsync(updatedPost);
-
-                    
+                    var result = await postService.UpdatePostAsync(id, updatedPost);
                     return result is not null ? Results.Ok(result) : Results.NotFound();
                 }
                 catch (Exception ex)
