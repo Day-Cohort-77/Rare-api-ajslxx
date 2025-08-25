@@ -157,11 +157,10 @@ namespace RareAPI.Services
             if (commentCount == 0)
             {
                 await ExecuteNonQueryAsync(@"
-                    INSERT INTO ""Comments"" (post_id, author_id, content) VALUES
-                    (1, 2, 'Great first post!'),
-                    (1, 1, 'Thanks for the comment!'),
-                    (2, 1, 'Love this sports content.');
-                ");
+                    INSERT INTO ""Comments"" (post_id, author_id, subject, content, created_on) VALUES
+                    (1, 2, 'Great Post!', 'I really enjoyed reading this. Thanks for sharing!', '2025-08-20 10:30:00'),
+                    (1, 1, 'Follow Up', 'Glad you liked it! More content coming soon.', '2025-08-21 14:15:00'),
+                    (2, 1, 'Question', 'Could you elaborate more on this topic?', '2025-08-22 09:45:00')");
             }
         }
 
