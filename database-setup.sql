@@ -106,11 +106,5 @@ ALTER TABLE "Comments" ADD COLUMN IF NOT EXISTS created_on TIMESTAMP DEFAULT CUR
 -- Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_comments_post_created ON "Comments"(post_id, created_on DESC);
 CREATE INDEX IF NOT EXISTS idx_comments_author ON "Comments"(author_id);
-
--- For efficient comment retrieval by post (most important)
-CREATE INDEX idx_comments_post_created ON "Comments"(post_id, created_on DESC);
-
--- For efficient JOIN operations
-CREATE INDEX idx_comments_author ON "Comments"(author_id);
-CREATE INDEX idx_users_id ON "Users"(id);  -- If not exists
-CREATE INDEX idx_posts_id ON "Posts"(id);  -- If not exists
+CREATE INDEX IF NOT EXISTS idx_users_id ON "Users"(id);
+CREATE INDEX IF NOT EXISTS idx_posts_id ON "Posts"(id);
