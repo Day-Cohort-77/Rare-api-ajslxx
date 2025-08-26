@@ -1,4 +1,3 @@
-
 -- DELETE FROM "PostTags";
 -- DELETE FROM "PostReactions";
 -- DELETE FROM "Comments";
@@ -65,7 +64,8 @@ CREATE TABLE IF NOT EXISTS "Comments" (
   post_id INTEGER,
   author_id INTEGER,
   content VARCHAR,
-  created_on DATE,
+  subject VARCHAR(255),
+  created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY(post_id) REFERENCES "Posts"(id),
   FOREIGN KEY(author_id) REFERENCES "Users"(id)
 );
@@ -98,3 +98,13 @@ CREATE TABLE IF NOT EXISTS "PostTags" (
   FOREIGN KEY(post_id) REFERENCES "Posts"(id),
   FOREIGN KEY(tag_id) REFERENCES "Tags"(id)
 );
+
+-- Add missing columns to Comments table
+ALTER TABLE "Comments" ADD COLUMN IF NOT EXISTS subject VARCHAR(255);
+ALTER TABLE "Comments" ADD COLUMN IF NOT EXISTS created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+-- Create indexes for performance
+CREATE INDEX IF NOT EXISTS idx_comments_post_created ON "Comments"(post_id, created_on DESC);
+CREATE INDEX IF NOT EXISTS idx_comments_author ON "Comments"(author_id);
+CREATE INDEX IF NOT EXISTS idx_users_id ON "Users"(id);
+CREATE INDEX IF NOT EXISTS idx_posts_id ON "Posts"(id);
