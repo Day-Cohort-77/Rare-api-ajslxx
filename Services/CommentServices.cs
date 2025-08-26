@@ -213,17 +213,59 @@ namespace RareAPI.Services
             return null;
         }
 
-        public async Task<Comment?> UpdateCommentAsync(int commentId, string newContent)
+        public async Task<Comment?> GetCommentWithDetailsByIdAsync(int commentId)
+        {
+            using var connection = CreateConnection();
+            await connection.OpenAsync();
+
+            using var command = new NpgsqlCommand(@"
+                SELECT 
+                    c.id,
+                    c.post_id,
+                    c.author_id,
+                    c.subject,
+                    c.content,
+                    c.created_on,
+                    CONCAT(u.first_name, ' ', u.last_name) as author_display_name,
+                    p.title as post_title
+                FROM ""Comments"" c
+                JOIN ""Users"" u ON c.author_id = u.id  
+                JOIN ""Posts"" p ON c.post_id = p.id
+                WHERE c.id = @commentId", connection);
+            
+            command.Parameters.AddWithValue("@commentId", commentId);
+            using var reader = await command.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                return new Comment
+                {
+                    Id = reader.GetInt32(0),
+                    PostId = reader.GetInt32(1),
+                    AuthorId = reader.GetInt32(2),
+                    Subject = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                    Content = reader.GetString(4),
+                    CreatedOn = reader.GetDateTime(5),
+                    AuthorDisplayName = reader.GetString(6),
+                    PostTitle = reader.GetString(7)
+                };
+            }
+
+            return null;
+        }
+
+        public async Task<Comment?> UpdateCommentAsync(int commentId, string newSubject, string newContent)
         {
             using var connection = CreateConnection();
             await connection.OpenAsync();
 
             using var command = new NpgsqlCommand(@"
                 UPDATE ""Comments"" 
-                SET content = @content 
+                SET subject = @subject, content = @content 
                 WHERE id = @commentId 
                 RETURNING id, post_id, author_id, subject, content, created_on", connection);
             
+            command.Parameters.AddWithValue("@subject", newSubject ?? string.Empty);
             command.Parameters.AddWithValue("@content", newContent);
             command.Parameters.AddWithValue("@commentId", commentId);
             using var reader = await command.ExecuteReaderAsync();

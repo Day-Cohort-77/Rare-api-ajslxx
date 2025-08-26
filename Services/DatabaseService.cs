@@ -162,6 +162,37 @@ namespace RareAPI.Services
                     (1, 1, 'Follow Up', 'Glad you liked it! More content coming soon.', '2025-08-21 14:15:00'),
                     (2, 1, 'Question', 'Could you elaborate more on this topic?', '2025-08-22 09:45:00')");
             }
+
+            // Seed Reactions if empty
+            using var reactionCommand = new NpgsqlCommand("SELECT COUNT(*) FROM \"Reactions\"", connection);
+            var reactionCount = Convert.ToInt32(await reactionCommand.ExecuteScalarAsync());
+            
+            if (reactionCount == 0)
+            {
+                await ExecuteNonQueryAsync(@"
+                    INSERT INTO ""Reactions"" (label, image_url) VALUES
+                    ('Like', '👍'),
+                    ('Love', '❤️'),
+                    ('Laugh', '😂'),
+                    ('Wow', '😮'),
+                    ('Sad', '😢'),
+                    ('Angry', '😠')");
+            }
+
+            // Seed sample PostReactions if empty
+            using var postReactionCommand = new NpgsqlCommand("SELECT COUNT(*) FROM \"PostReactions\"", connection);
+            var postReactionCount = Convert.ToInt32(await postReactionCommand.ExecuteScalarAsync());
+            
+            if (postReactionCount == 0)
+            {
+                await ExecuteNonQueryAsync(@"
+                    INSERT INTO ""PostReactions"" (user_id, reaction_id, post_id) VALUES
+                    (1, 1, 1),  -- Billy Bob likes First Post
+                    (2, 2, 1),  -- Jimmy John loves First Post
+                    (1, 3, 2),  -- Billy Bob laughs at Second Post
+                    (2, 1, 2)   -- Jimmy John likes Second Post
+                ");
+            }
         }
 
         

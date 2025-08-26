@@ -35,6 +35,20 @@ namespace RareAPI.Endpoints
                 }
             });
 
+            // GET /comments/{id}/details - Get comment with author and post details for editing
+            app.MapGet("/comments/{id}/details", async (int id, CommentServices commentService) =>
+            {
+                try
+                {
+                    var comment = await commentService.GetCommentWithDetailsByIdAsync(id);
+                    return comment != null ? Results.Ok(comment) : Results.NotFound();
+                }
+                catch (Exception ex)
+                {
+                    return Results.Problem($"Error retrieving comment details: {ex.Message}");
+                }
+            });
+
             // POST /comments
             app.MapPost("/comments", async (Comment comment, CommentServices commentService) =>
             {
@@ -54,7 +68,7 @@ namespace RareAPI.Endpoints
             {
                 try
                 {
-                    var updatedComment = await commentService.UpdateCommentAsync(id, request.Content);
+                    var updatedComment = await commentService.UpdateCommentAsync(id, request.Subject, request.Content);
                     return updatedComment != null ? Results.Ok(updatedComment) : Results.NotFound();
                 }
                 catch (Exception ex)
