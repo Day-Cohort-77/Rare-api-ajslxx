@@ -100,9 +100,10 @@ namespace RareAPI.Services
             {
                 await ExecuteNonQueryAsync(@"
                     INSERT INTO ""Users"" (first_name, last_name, email, bio, username, password, profile_image_url, created_on, active) VALUES
-                    ('Billy', 'Bob', 'billy@bob.com', 'I am Billy Bob', 'BillyBob', 'mycoolpass', 'https://www.thedailybeast.com/resizer/7-n47tS_FIUHO6A0UWE2XxsDki0=/arc-photo-thedailybeast/arc2-prod/public/GBJAOT4VF5IM7BLNH2I6MWRKGU.png', (TO_DATE('08/12/2025', 'MM/DD/YYYY')), true),
-                    ('Jimmy', 'John', 'jimmy@john.com', 'I am Jimmy John', 'JimmyJohn', 'ExcellentPassword', 'https://hips.hearstapps.com/hmg-prod/images/screenshot-2024-10-28-at-4-38-05-pm-671ff63778f27.png?crop=0.494xw:1.00xh;0.306xw,0&resize=1200:*', (TO_DATE('07/01/2022', 'MM/DD/YYYY')), true);
-                ");
+                    ('test', 'test', 'test@test.com', 'test', 'test', 'test', 'test', (TO_DATE('08/12/2025', 'MM/DD/YYYY')), true),
+                    ('test2', 'test2', 'test2@test.com', 'test2', 'test2', 'test2', 'test2', (TO_DATE('08/02/2025', 'MM/DD/YYYY')), true),
+                    ('test3', 'test3', 'test3@test.com', 'test3', 'test3', 'test3', 'test3', (TO_DATE('08/01/2025', 'MM/DD/YYYY')), true)
+                    ");
             }
 
             // Seed Tags if empty
@@ -157,10 +158,40 @@ namespace RareAPI.Services
             if (commentCount == 0)
             {
                 await ExecuteNonQueryAsync(@"
-                    INSERT INTO ""Comments"" (post_id, author_id, content) VALUES
-                    (1, 2, 'Great first post!'),
-                    (1, 1, 'Thanks for the comment!'),
-                    (2, 1, 'Love this sports content.');
+                    INSERT INTO ""Comments"" (post_id, author_id, subject, content, created_on) VALUES
+                    (1, 2, 'Great Post!', 'I really enjoyed reading this. Thanks for sharing!', '2025-08-20 10:30:00'),
+                    (1, 1, 'Follow Up', 'Glad you liked it! More content coming soon.', '2025-08-21 14:15:00'),
+                    (2, 1, 'Question', 'Could you elaborate more on this topic?', '2025-08-22 09:45:00')");
+            }
+
+            // Seed Reactions if empty
+            using var reactionCommand = new NpgsqlCommand("SELECT COUNT(*) FROM \"Reactions\"", connection);
+            var reactionCount = Convert.ToInt32(await reactionCommand.ExecuteScalarAsync());
+            
+            if (reactionCount == 0)
+            {
+                await ExecuteNonQueryAsync(@"
+                    INSERT INTO ""Reactions"" (label, image_url) VALUES
+                    ('Like', '👍'),
+                    ('Love', '❤️'),
+                    ('Laugh', '😂'),
+                    ('Wow', '😮'),
+                    ('Sad', '😢'),
+                    ('Angry', '😠')");
+            }
+
+            // Seed sample PostReactions if empty
+            using var postReactionCommand = new NpgsqlCommand("SELECT COUNT(*) FROM \"PostReactions\"", connection);
+            var postReactionCount = Convert.ToInt32(await postReactionCommand.ExecuteScalarAsync());
+            
+            if (postReactionCount == 0)
+            {
+                await ExecuteNonQueryAsync(@"
+                    INSERT INTO ""PostReactions"" (user_id, reaction_id, post_id) VALUES
+                    (1, 1, 1),  -- Billy Bob likes First Post
+                    (2, 2, 1),  -- Jimmy John loves First Post
+                    (1, 3, 2),  -- Billy Bob laughs at Second Post
+                    (2, 1, 2)   -- Jimmy John likes Second Post
                 ");
             }
             
