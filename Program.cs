@@ -11,6 +11,7 @@ builder.Services.AddScoped<PostServices>();
 builder.Services.AddScoped<CommentServices>();
 builder.Services.AddScoped<CategoriesServices>();
 builder.Services.AddScoped<TagService>();
+builder.Services.AddScoped<PostSearchService>();
 
 
 
@@ -47,6 +48,7 @@ app.MapPostEndpoints();
 app.MapTagEndpoints();
 app.MapCategoryEndpoints();
 app.MapCommentEndpoints();
+app.MapPostSearchEndpoints();
 app.Run();
 
 
