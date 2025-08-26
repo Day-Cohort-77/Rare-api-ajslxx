@@ -86,16 +86,16 @@ namespace RareAPI.Services
 
         public async Task SeedDatabaseAsync()
         {
-            
+
             using var connection = CreateConnection();
             await connection.OpenAsync();
 
             // Check individual tables and seed each separately
-            
+
             // Seed Users if empty
             using var userCommand = new NpgsqlCommand("SELECT COUNT(*) FROM \"Users\"", connection);
             var userCount = Convert.ToInt32(await userCommand.ExecuteScalarAsync());
-            
+
             if (userCount == 0)
             {
                 await ExecuteNonQueryAsync(@"
@@ -109,7 +109,7 @@ namespace RareAPI.Services
             // Seed Tags if empty
             using var tagCommand = new NpgsqlCommand("SELECT COUNT(*) FROM \"Tags\"", connection);
             var tagCount = Convert.ToInt32(await tagCommand.ExecuteScalarAsync());
-            
+
             if (tagCount == 0)
             {
                 await ExecuteNonQueryAsync(@"
@@ -123,7 +123,7 @@ namespace RareAPI.Services
             // Seed Categories if empty
             using var categoryCommand = new NpgsqlCommand("SELECT COUNT(*) FROM \"Categories\"", connection);
             var categoryCount = Convert.ToInt32(await categoryCommand.ExecuteScalarAsync());
-            
+
             if (categoryCount == 0)
             {
                 await ExecuteNonQueryAsync(@"
@@ -140,7 +140,7 @@ namespace RareAPI.Services
             // Seed Posts if empty
             using var postCommand = new NpgsqlCommand("SELECT COUNT(*) FROM \"Posts\"", connection);
             var postCount = Convert.ToInt32(await postCommand.ExecuteScalarAsync());
-            
+
             if (postCount == 0)
             {
                 await ExecuteNonQueryAsync(@"
@@ -154,7 +154,7 @@ namespace RareAPI.Services
             // Seed Comments if empty  
             using var commentCommand = new NpgsqlCommand("SELECT COUNT(*) FROM \"Comments\"", connection);
             var commentCount = Convert.ToInt32(await commentCommand.ExecuteScalarAsync());
-            
+
             if (commentCount == 0)
             {
                 await ExecuteNonQueryAsync(@"
@@ -194,6 +194,20 @@ namespace RareAPI.Services
                     (2, 1, 2)   -- Jimmy John likes Second Post
                 ");
             }
+            
+            // Seed Subscriptions if empty  
+            using var subscriptionCommand = new NpgsqlCommand("SELECT COUNT(*) FROM \"Subscriptions\"", connection);
+            var subscriptionCount = Convert.ToInt32(await subscriptionCommand.ExecuteScalarAsync());
+            
+            if (subscriptionCount == 0)
+            {
+                await ExecuteNonQueryAsync(@"
+                    INSERT INTO ""Subscriptions"" (follower_id, author_id, created_on) VALUES
+                    (1, 2, '2022-12-21'::DATE),
+                    (1, 1, '2020-02-02'::DATE),
+                    (2, 1, '2025-08-12'::DATE);
+                ");
+            }
         }
 
         
@@ -201,5 +215,3 @@ namespace RareAPI.Services
        
     }
 }
-
-

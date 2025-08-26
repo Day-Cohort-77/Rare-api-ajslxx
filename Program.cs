@@ -6,12 +6,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSingleton<DatabaseService>();
-builder.Services.AddScoped<UserServices>();
-builder.Services.AddScoped<PostServices>();
-builder.Services.AddScoped<CommentServices>();
-builder.Services.AddScoped<CategoriesServices>();
-builder.Services.AddScoped<TagService>();
-builder.Services.AddScoped<ReactionServices>();
+
+builder.Services.AddSingleton<UserServices>();
+builder.Services.AddSingleton<PostServices>();
+builder.Services.AddSingleton<CommentServices>();
+builder.Services.AddSingleton<CategoriesServices>();
+builder.Services.AddSingleton<TagService>();
+builder.Services.AddSingleton<SubscriptionService>();
+builder.Services.AddSingleton<ReactionServices>();
+
 
 
 
@@ -48,11 +51,6 @@ app.MapPostEndpoints();
 app.MapTagEndpoints();
 app.MapCategoryEndpoints();
 app.MapCommentEndpoints();
+app.MapSubscriptionEndpoints();
 app.MapReactionEndpoints();
 app.Run();
-
-
-
-
-
-
