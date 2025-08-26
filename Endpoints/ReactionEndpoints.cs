@@ -21,6 +21,41 @@ namespace RareAPI.Endpoints
                 }
             });
 
+            // POST /reactions - Create a new reaction
+            app.MapPost("/reactions", async (CreateReactionRequest request, ReactionServices reactionService) =>
+            {
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(request.Label) || string.IsNullOrWhiteSpace(request.ImageUrl))
+                    {
+                        return Results.BadRequest("Label and ImageUrl are required");
+                    }
+
+                    var createdReaction = await reactionService.CreateReactionAsync(request.Label, request.ImageUrl);
+                    return createdReaction != null
+                        ? Results.Created($"/reactions/{createdReaction.Id}", createdReaction)
+                        : Results.BadRequest("Failed to create reaction");
+                }
+                catch (Exception ex)
+                {
+                    return Results.Problem($"Error creating reaction: {ex.Message}");
+                }
+            });
+
+            // GET /reactions/{id} - Get a specific reaction by ID
+            app.MapGet("/reactions/{id}", async (int id, ReactionServices reactionService) =>
+            {
+                try
+                {
+                    var reaction = await reactionService.GetReactionByIdAsync(id);
+                    return reaction != null ? Results.Ok(reaction) : Results.NotFound();
+                }
+                catch (Exception ex)
+                {
+                    return Results.Problem($"Error retrieving reaction: {ex.Message}");
+                }
+            });
+
             // POST /posts/{postId}/reactions - Add a reaction to a post
             app.MapPost("/posts/{postId}/reactions", async (int postId, AddPostReactionRequest request, ReactionServices reactionService) =>
             {

@@ -1,0 +1,82 @@
+### Add New Reactions API Tests
+@baseUrl = http://localhost:5000
+
+### 1. Get all current reactions (before adding new ones)
+GET {{baseUrl}}/reactions
+Accept: application/json
+
+### 2. Create a new "Fire" reaction
+POST {{baseUrl}}/reactions
+Content-Type: application/json
+
+{
+  "label": "Fire",
+  "imageUrl": "🔥"
+}
+
+### 3. Create a new "Party" reaction
+POST {{baseUrl}}/reactions
+Content-Type: application/json
+
+{
+  "label": "Party",
+  "imageUrl": "🎉"
+}
+
+### 4. Create a new "Thinking" reaction
+POST {{baseUrl}}/reactions
+Content-Type: application/json
+
+{
+  "label": "Thinking",
+  "imageUrl": "🤔"
+}
+
+### 5. Get all reactions (should now include the new ones)
+GET {{baseUrl}}/reactions
+Accept: application/json
+
+### 6. Get a specific reaction by ID (try ID 7 - should be the first new one)
+GET {{baseUrl}}/reactions/7
+Accept: application/json
+
+### 7. Test validation - try to create reaction without label
+POST {{baseUrl}}/reactions
+Content-Type: application/json
+
+{
+  "label": "",
+  "imageUrl": "😊"
+}
+
+### 8. Test validation - try to create reaction without imageUrl
+POST {{baseUrl}}/reactions
+Content-Type: application/json
+
+{
+  "label": "Smile",
+  "imageUrl": ""
+}
+
+### 9. Test using the new reaction on a post (Fire reaction - should be ID 7)
+POST {{baseUrl}}/posts/1/reactions
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "reactionId": 7,
+  "postId": 1
+}
+
+### 10. Get Post 1 with reactions (should show the new Fire reaction)
+GET {{baseUrl}}/posts/1/with-reactions?userId=1
+Accept: application/json
+
+### 11. Create a reaction with a URL image instead of emoji
+POST {{baseUrl}}/reactions
+Content-Type: application/json
+
+{
+  "label": "Custom",
+  "imageUrl": "https://example.com/custom-reaction.png"
+}

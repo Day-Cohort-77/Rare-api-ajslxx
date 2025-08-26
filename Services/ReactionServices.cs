@@ -45,6 +45,62 @@ namespace RareAPI.Services
             return reactions;
         }
 
+        // Create a new reaction
+        public async Task<Reaction?> CreateReactionAsync(string label, string imageUrl)
+        {
+            using var connection = CreateConnection();
+            await connection.OpenAsync();
+
+            using var command = new NpgsqlCommand(@"
+                INSERT INTO ""Reactions"" (label, image_url)
+                VALUES (@label, @imageUrl)
+                RETURNING id, label, image_url", connection);
+            
+            command.Parameters.AddWithValue("@label", label);
+            command.Parameters.AddWithValue("@imageUrl", imageUrl);
+            
+            using var reader = await command.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                return new Reaction
+                {
+                    Id = reader.GetInt32(0),
+                    Label = reader.GetString(1),
+                    ImageUrl = reader.GetString(2)
+                };
+            }
+
+            return null;
+        }
+
+        // Get a specific reaction by ID
+        public async Task<Reaction?> GetReactionByIdAsync(int reactionId)
+        {
+            using var connection = CreateConnection();
+            await connection.OpenAsync();
+
+            using var command = new NpgsqlCommand(@"
+                SELECT id, label, image_url 
+                FROM ""Reactions"" 
+                WHERE id = @reactionId", connection);
+            
+            command.Parameters.AddWithValue("@reactionId", reactionId);
+            using var reader = await command.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                return new Reaction
+                {
+                    Id = reader.GetInt32(0),
+                    Label = reader.GetString(1),
+                    ImageUrl = reader.GetString(2)
+                };
+            }
+
+            return null;
+        }
+
         // Add a reaction to a post
         public async Task<PostReaction?> AddPostReactionAsync(int userId, int reactionId, int postId)
         {
