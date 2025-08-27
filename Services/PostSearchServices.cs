@@ -24,13 +24,14 @@ namespace RareAPI.Services
             await connection.OpenAsync();
 
             string sql = @"
-                SELECT id, user_id, category_id, title, publication_date, image_url, content, approved
-                FROM ""Posts""
-                WHERE title ILIKE @query
-                ORDER BY publication_date DESC
-            ";
+        SELECT id, user_id, category_id, title, publication_date, image_url, content, approved
+        FROM ""Posts""
+        WHERE title ILIKE @query
+        ORDER BY publication_date DESC
+    ";
 
             using var command = new NpgsqlCommand(sql, connection);
+            Console.WriteLine($"Search Query: {query}");
             command.Parameters.AddWithValue("@query", $"%{query}%");
 
             using var reader = await command.ExecuteReaderAsync();

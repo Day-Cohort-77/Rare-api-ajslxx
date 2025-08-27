@@ -6,7 +6,7 @@ public static class PostSearchEndpoints
 {
     public static void MapPostSearchEndpoints(this WebApplication app)
     {
-        app.MapGet("/api/posts/search", async (string q, PostSearchService searchService) =>
+        app.MapGet("/posts/search", async (string q, PostSearchService searchService) =>
         {
             if (string.IsNullOrWhiteSpace(q))
                 return Results.BadRequest("Query string cannot be empty.");
