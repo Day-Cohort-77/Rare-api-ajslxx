@@ -67,6 +67,65 @@ namespace RareAPI.Endpoints
                     return Results.Problem($"An error occurred while deleting the post: {ex.Message}");
                 }
             });
+
+            // Post Header Image Endpoints
+            app.MapPost("/posts/{postId}/header-image", async (int postId, UpdatePostHeaderImageRequest request, PostServices postService) =>
+            {
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(request.ImageData) || string.IsNullOrWhiteSpace(request.FileName))
+                    {
+                        return Results.BadRequest("ImageData and FileName are required");
+                    }
+
+                    var result = await postService.UpdatePostHeaderImageAsync(postId, request);
+                    
+                    if (result.Success)
+                    {
+                        return Results.Ok(result);
+                    }
+                    else
+                    {
+                        return Results.BadRequest(result.Message);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return Results.Problem($"Error updating post header image: {ex.Message}");
+                }
+            });
+
+            app.MapGet("/posts/{postId}/header-image", async (int postId, PostServices postService) =>
+            {
+                try
+                {
+                    var headerImageUrl = await postService.GetPostHeaderImageAsync(postId);
+                    
+                    if (string.IsNullOrEmpty(headerImageUrl))
+                    {
+                        return Results.NotFound("Post header image not found");
+                    }
+
+                    return Results.Ok(new { postId, imageUrl = headerImageUrl });
+                }
+                catch (Exception ex)
+                {
+                    return Results.Problem($"Error retrieving post header image: {ex.Message}");
+                }
+            });
+
+            app.MapDelete("/posts/{postId}/header-image", async (int postId, PostServices postService) =>
+            {
+                try
+                {
+                    var success = await postService.DeletePostHeaderImageAsync(postId);
+                    return success ? Results.NoContent() : Results.NotFound("Post not found");
+                }
+                catch (Exception ex)
+                {
+                    return Results.Problem($"Error deleting post header image: {ex.Message}");
+                }
+            });
         }
     }
 }
