@@ -1,0 +1,108 @@
+### Post Header Image API Tests
+@baseUrl = http://localhost:5000
+
+### 1. Get post details (to see current header image)
+GET {{baseUrl}}/posts/1
+Accept: application/json
+
+### 2. Upload a header image using Base64 (small test image)
+POST {{baseUrl}}/posts/1/header-image
+Content-Type: application/json
+
+{
+  "imageData": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+  "fileName": "header-image.png",
+  "contentType": "image/png"
+}
+
+### 3. Get the post's header image
+GET {{baseUrl}}/posts/1/header-image
+Accept: application/json
+
+### 4. Update post details to see the new header image
+GET {{baseUrl}}/posts/1
+Accept: application/json
+
+### 5. Upload a different header image (JPEG example)
+POST {{baseUrl}}/posts/1/header-image
+Content-Type: application/json
+
+{
+  "imageData": "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwA/8A8A",
+  "fileName": "blog-header.jpg",
+  "contentType": "image/jpeg"
+}
+
+### 6. Test validation - Empty image data
+POST {{baseUrl}}/posts/1/header-image
+Content-Type: application/json
+
+{
+  "imageData": "",
+  "fileName": "empty.png",
+  "contentType": "image/png"
+}
+
+### 7. Test validation - Invalid base64
+POST {{baseUrl}}/posts/1/header-image
+Content-Type: application/json
+
+{
+  "imageData": "invalid-base64-data",
+  "fileName": "invalid.png",
+  "contentType": "image/png"
+}
+
+### 8. Test with a different post
+POST {{baseUrl}}/posts/2/header-image
+Content-Type: application/json
+
+{
+  "imageData": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+  "fileName": "post2-header.png",
+  "contentType": "image/png"
+}
+
+### 9. Upload a larger header image (WebP format)
+POST {{baseUrl}}/posts/1/header-image
+Content-Type: application/json
+
+{
+  "imageData": "data:image/webp;base64,UklGRiQAAABXRUJQVlA4IBgAAAAwAQCdASoBAAEAAgA0JaQAA3AA/vuUAAA=",
+  "fileName": "header.webp",
+  "contentType": "image/webp"
+}
+
+### 10. Delete header image
+DELETE {{baseUrl}}/posts/1/header-image
+
+### 11. Verify header image was deleted
+GET {{baseUrl}}/posts/1/header-image
+Accept: application/json
+
+### 12. Check post details after deletion
+GET {{baseUrl}}/posts/1
+Accept: application/json
+
+### 13. Test creating a new post with header image
+POST {{baseUrl}}/posts
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "categoryId": 1,
+  "title": "Post with Header Image",
+  "imageUrl": "",
+  "content": "This post will get a header image uploaded after creation",
+  "approved": true
+}
+
+### 14. Upload header image to the newly created post (assuming it gets ID 3)
+POST {{baseUrl}}/posts/3/header-image
+Content-Type: application/json
+
+{
+  "imageData": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+  "fileName": "new-post-header.png",
+  "contentType": "image/png"
+}
