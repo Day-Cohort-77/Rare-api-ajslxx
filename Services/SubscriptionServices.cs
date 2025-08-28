@@ -31,5 +31,28 @@ namespace RareAPI.Services
       }
       return null;
     }
+
+        public async Task<int?> GetTotalSubscriptionByAuthorIdAsync(int id)
+    {
+      using var connection = CreateConnection();
+      await connection.OpenAsync();
+
+      using var command = new NpgsqlCommand(
+          @"SELECT 
+          COUNT(*)
+          FROM ""Subscriptions""
+          WHERE ""author_id"" = @id",
+          connection);
+      command.Parameters.AddWithValue("@id", id);
+
+      using var reader = await command.ExecuteReaderAsync();
+
+      if (await reader.ReadAsync())
+      {
+        var totalSubs = reader.GetInt32(0);
+        return totalSubs;
+      }
+      return null;
+    }
   }
 }

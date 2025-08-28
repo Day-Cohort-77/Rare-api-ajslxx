@@ -142,6 +142,49 @@ namespace RareAPI.Services
             return null;
         }
 
+        public async Task<List<Post>> GetPostsByAuthorIdAsync(int id)
+        {
+            var posts = new List<Post>();
+
+            using var connection = CreateConnection();
+            await connection.OpenAsync();
+
+            using var command = new NpgsqlCommand(@"
+                SELECT 
+                    id, 
+                    user_id, 
+                    category_id, 
+                    title, 
+                    publication_date, 
+                    image_url, 
+                    content, 
+                    approved 
+                FROM ""Posts"" 
+                WHERE user_id = @id
+                ORDER BY publication_date DESC", connection);
+
+            command.Parameters.AddWithValue("@id", id);
+            
+            using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                posts.Add(new Post
+                {
+                    Id = reader.GetInt32(0),
+                    UserId = reader.GetInt32(1),
+                    CategoryId = reader.GetInt32(2),
+                    Title = reader.GetString(3),
+                    PublicationDate = reader.GetDateTime(4),
+                    ImageUrl = reader.GetString(5),
+                    Content = reader.GetString(6),
+                    Approved = reader.GetBoolean(7)
+                });
+            }
+
+            return posts;
+        }
+
         public async Task<Post?> CreatePostAsync(Post newPost)
         {
             using var connection = CreateConnection();
