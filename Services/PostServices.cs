@@ -37,9 +37,53 @@ namespace RareAPI.Services
                     approved 
                 FROM ""Posts"" 
                 ORDER BY publication_date DESC", connection);
-            
+
             using var reader = await command.ExecuteReaderAsync();
 
+            while (await reader.ReadAsync())
+            {
+                posts.Add(new Post
+                {
+                    Id = reader.GetInt32(0),
+                    UserId = reader.GetInt32(1),
+                    CategoryId = reader.GetInt32(2),
+                    Title = reader.GetString(3),
+                    PublicationDate = reader.GetDateTime(4),
+                    ImageUrl = reader.GetString(5),
+                    Content = reader.GetString(6),
+                    Approved = reader.GetBoolean(7)
+                });
+            }
+
+            return posts;
+        }
+
+        public async Task<List<Post>> GetPostsByTagIdAsync(int tagId)
+        {
+            var posts = new List<Post>();
+
+            using var connection = CreateConnection();
+            await connection.OpenAsync();
+
+            var sql = @"
+        SELECT DISTINCT
+            p.id, 
+            p.user_id, 
+            p.category_id, 
+            p.title, 
+            p.publication_date, 
+            p.image_url, 
+            p.content, 
+            p.approved 
+        FROM ""Posts"" p
+        INNER JOIN ""PostTags"" pt ON p.id = pt.post_id
+        WHERE pt.tag_id = @tagId AND p.approved = true
+        ORDER BY p.publication_date DESC";
+
+            using var command = new NpgsqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@tagId", tagId);
+
+            using var reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
                 posts.Add(new Post
@@ -75,7 +119,7 @@ namespace RareAPI.Services
                     approved 
                 FROM ""Posts"" 
                 WHERE id = @id";
-            
+
             using var command = new NpgsqlCommand(sql, connection);
             command.Parameters.AddWithValue("@id", id);
 
@@ -211,7 +255,7 @@ namespace RareAPI.Services
                 FROM ""Posts"" 
                 WHERE user_id = @userId 
                 ORDER BY publication_date DESC";
-            
+
             using var command = new NpgsqlCommand(sql, connection);
             command.Parameters.AddWithValue("@userId", userId);
 
@@ -255,7 +299,7 @@ namespace RareAPI.Services
 
                 // Validate and process base64 data
                 var base64Data = request.ImageData;
-                
+
                 // Remove data URL prefix if present (e.g., "data:image/jpeg;base64,")
                 if (base64Data.StartsWith("data:"))
                 {
@@ -270,7 +314,7 @@ namespace RareAPI.Services
                 try
                 {
                     var imageBytes = Convert.FromBase64String(base64Data);
-                    
+
                     // Basic size validation (limit to 10MB for header images)
                     if (imageBytes.Length > 10 * 1024 * 1024)
                     {
@@ -313,7 +357,7 @@ namespace RareAPI.Services
                 command.Parameters.AddWithValue("@imageUrl", dataUrl);
 
                 var result = await command.ExecuteScalarAsync();
-                
+
                 if (result != null)
                 {
                     response.Success = true;
@@ -385,7 +429,7 @@ namespace RareAPI.Services
                 return true;
 
             // WebP
-            if (imageBytes.Length >= 12 && 
+            if (imageBytes.Length >= 12 &&
                 imageBytes[0] == 0x52 && imageBytes[1] == 0x49 && imageBytes[2] == 0x46 && imageBytes[3] == 0x46 &&
                 imageBytes[8] == 0x57 && imageBytes[9] == 0x45 && imageBytes[10] == 0x42 && imageBytes[11] == 0x50)
                 return true;

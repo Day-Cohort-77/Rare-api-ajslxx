@@ -26,6 +26,13 @@ namespace RareAPI.Endpoints
                 }
             });
 
+            // Add this endpoint for getting posts by tag ID
+            app.MapGet("/posts/tag/{tagId}", async (int tagId, PostServices postService) =>
+            {
+                var posts = await postService.GetPostsByTagIdAsync(tagId);
+                return Results.Ok(posts);
+            });
+
             app.MapGet("/posts/{id}", async (int id, PostServices postService) =>
             {
                 var post = await postService.GetPostByIdAsync(id);
@@ -53,12 +60,12 @@ namespace RareAPI.Endpoints
 
                     if (deleted)
                     {
-                        
+
                         return Results.NoContent();
                     }
                     else
                     {
-                        
+
                         return Results.NotFound();
                     }
                 }
@@ -79,7 +86,7 @@ namespace RareAPI.Endpoints
                     }
 
                     var result = await postService.UpdatePostHeaderImageAsync(postId, request);
-                    
+
                     if (result.Success)
                     {
                         return Results.Ok(result);
@@ -100,7 +107,7 @@ namespace RareAPI.Endpoints
                 try
                 {
                     var headerImageUrl = await postService.GetPostHeaderImageAsync(postId);
-                    
+
                     if (string.IsNullOrEmpty(headerImageUrl))
                     {
                         return Results.NotFound("Post header image not found");
