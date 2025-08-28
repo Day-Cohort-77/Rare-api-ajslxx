@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSingleton<DatabaseService>();
-
+builder.Services.AddSingleton<PostSearchService>();
 builder.Services.AddSingleton<UserServices>();
 builder.Services.AddSingleton<PostServices>();
 builder.Services.AddSingleton<CommentServices>();
@@ -14,8 +14,6 @@ builder.Services.AddSingleton<CategoriesServices>();
 builder.Services.AddSingleton<TagService>();
 builder.Services.AddSingleton<SubscriptionService>();
 builder.Services.AddSingleton<ReactionServices>();
-
-
 
 
 builder.Services.AddCors(options =>
@@ -51,6 +49,8 @@ app.MapPostEndpoints();
 app.MapTagEndpoints();
 app.MapCategoryEndpoints();
 app.MapCommentEndpoints();
+app.MapPostSearchEndpoints();
 app.MapSubscriptionEndpoints();
 app.MapReactionEndpoints();
+
 app.Run();
