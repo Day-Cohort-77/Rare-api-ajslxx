@@ -18,7 +18,7 @@ namespace RareAPI.Services
             return new NpgsqlConnection(_connectionString);
         }
 
-        
+
         public async Task ExecuteNonQueryAsync(string sql, Dictionary<string, object>? parameters = null)
         {
             using var connection = CreateConnection();
@@ -36,14 +36,30 @@ namespace RareAPI.Services
             await command.ExecuteNonQueryAsync();
         }
 
+        public async Task ExecuteNonQueryAsync(string sql, Dictionary<string, object>? parameters, NpgsqlTransaction transaction)
+        {
+            using var command = new NpgsqlCommand(sql, transaction.Connection, transaction);
+
+            if (parameters != null)
+            {
+                foreach (var param in parameters)
+                {
+                    command.Parameters.AddWithValue(param.Key, param.Value);
+                }
+            }
+
+            await command.ExecuteNonQueryAsync();
+        }
+
+
         public async Task InitializeDatabaseAsync()
         {
-            
+
             var masterConnStr = _connectionString.Replace("Database=RareAPI", "Database=postgres");
             using var masterConnection = new NpgsqlConnection(masterConnStr);
             await masterConnection.OpenAsync();
 
-            
+
             using var checkCommand = new NpgsqlCommand(
                 "SELECT 1 FROM pg_database WHERE datname = 'RareAPI'",
                 masterConnection);
@@ -51,32 +67,32 @@ namespace RareAPI.Services
 
             if (exists == null)
             {
-                
+
                 using var createDbCommand = new NpgsqlCommand(
                     "CREATE DATABASE \"RareAPI\"",
                     masterConnection);
                 await createDbCommand.ExecuteNonQueryAsync();
             }
 
-            
+
             await masterConnection.CloseAsync();
 
-            
+
             using var rareApiConnection = new NpgsqlConnection(_connectionString);
             await rareApiConnection.OpenAsync();
 
 
-            
 
-            
+
+
             using var checkTablesCommand = new NpgsqlCommand(
                 "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'Users'",
                 rareApiConnection);
             var tableExists = (long)(await checkTablesCommand.ExecuteScalarAsync() ?? 0);
 
-            
+
             {
-                
+
                 string sql = File.ReadAllText("database-setup.sql");
                 using var setupCommand = new NpgsqlCommand(sql, rareApiConnection);
                 await setupCommand.ExecuteNonQueryAsync();
@@ -86,16 +102,16 @@ namespace RareAPI.Services
 
         public async Task SeedDatabaseAsync()
         {
-            
+
             using var connection = CreateConnection();
             await connection.OpenAsync();
 
             // Check individual tables and seed each separately
-            
+
             // Seed Users if empty
             using var userCommand = new NpgsqlCommand("SELECT COUNT(*) FROM \"Users\"", connection);
             var userCount = Convert.ToInt32(await userCommand.ExecuteScalarAsync());
-            
+
             if (userCount == 0)
             {
                 await ExecuteNonQueryAsync(@"
@@ -109,7 +125,7 @@ namespace RareAPI.Services
             // Seed Tags if empty
             using var tagCommand = new NpgsqlCommand("SELECT COUNT(*) FROM \"Tags\"", connection);
             var tagCount = Convert.ToInt32(await tagCommand.ExecuteScalarAsync());
-            
+
             if (tagCount == 0)
             {
                 await ExecuteNonQueryAsync(@"
@@ -123,7 +139,7 @@ namespace RareAPI.Services
             // Seed Categories if empty
             using var categoryCommand = new NpgsqlCommand("SELECT COUNT(*) FROM \"Categories\"", connection);
             var categoryCount = Convert.ToInt32(await categoryCommand.ExecuteScalarAsync());
-            
+
             if (categoryCount == 0)
             {
                 await ExecuteNonQueryAsync(@"
@@ -140,7 +156,7 @@ namespace RareAPI.Services
             // Seed Posts if empty
             using var postCommand = new NpgsqlCommand("SELECT COUNT(*) FROM \"Posts\"", connection);
             var postCount = Convert.ToInt32(await postCommand.ExecuteScalarAsync());
-            
+
             if (postCount == 0)
             {
                 await ExecuteNonQueryAsync(@"
@@ -154,7 +170,7 @@ namespace RareAPI.Services
             // Seed Comments if empty  
             using var commentCommand = new NpgsqlCommand("SELECT COUNT(*) FROM \"Comments\"", connection);
             var commentCount = Convert.ToInt32(await commentCommand.ExecuteScalarAsync());
-            
+
             if (commentCount == 0)
             {
                 await ExecuteNonQueryAsync(@"
@@ -166,9 +182,9 @@ namespace RareAPI.Services
             }
         }
 
-        
 
-       
+
+
     }
 }
 

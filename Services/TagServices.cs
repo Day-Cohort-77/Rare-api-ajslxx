@@ -98,5 +98,79 @@ namespace RareAPI.Services
 
             await _databaseService.ExecuteNonQueryAsync(sql, parameters);
         }
+
+        public async Task<List<Tag>> GetPostTagsAsync(int postId)
+        {
+            var response = new List<Tag>();
+
+            using var connection = _databaseService.CreateConnection();
+            await connection.OpenAsync();
+
+            using var command = new NpgsqlCommand(
+                @"SELECT t.id, t.label 
+          FROM ""Tags"" t
+          INNER JOIN ""PostTags"" pt ON t.id = pt.tag_id
+          WHERE pt.post_id = @postId
+          ORDER BY t.label;",
+                connection);
+
+            command.Parameters.AddWithValue("@postId", postId);
+
+            using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                response.Add(new Tag
+                {
+                    Id = reader.GetInt32(reader.GetOrdinal("id")),
+                    Label = reader.GetString(reader.GetOrdinal("label"))
+                });
+            }
+
+            return response;
+        }
+
+        public async Task SavePostTagsAsync(int postId, List<int> tagIds)
+        {
+            using var connection = _databaseService.CreateConnection();
+            await connection.OpenAsync();
+
+            // Start transaction
+            using var transaction = await connection.BeginTransactionAsync();
+
+            try
+            {
+                // First, remove existing tags for this post
+                const string deleteSql = @"DELETE FROM ""PostTags"" WHERE post_id = @postId;";
+                var deleteParameters = new Dictionary<string, object>
+        {
+            { "@postId", postId }
+        };
+                await _databaseService.ExecuteNonQueryAsync(deleteSql, deleteParameters, transaction);
+
+                // Then, add new tags
+                if (tagIds.Any())
+                {
+                    const string insertSql = @"INSERT INTO ""PostTags"" (post_id, tag_id) VALUES (@postId, @tagId);";
+
+                    foreach (var tagId in tagIds)
+                    {
+                        var insertParameters = new Dictionary<string, object>
+                {
+                    { "@postId", postId },
+                    { "@tagId", tagId }
+                };
+                        await _databaseService.ExecuteNonQueryAsync(insertSql, insertParameters, transaction);
+                    }
+                }
+
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
     }
 }
