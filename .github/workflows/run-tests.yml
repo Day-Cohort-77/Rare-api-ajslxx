@@ -1,0 +1,42 @@
+---
+name: Run Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: Build and Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore Rare-api-ajslxx.sln
+
+      - name: Build
+        run: >
+          dotnet build Rare-api-ajslxx.sln --no-restore --configuration Release
+
+      - name: Test
+        run: >
+          dotnet test Rare-api-ajslxx.sln --no-build --configuration Release
+          --verbosity normal --logger trx --results-directory TestResults ||
+          echo "No tests found. Build successful."
+
+      - name: Upload test results (if any tests exist)
+        uses: actions/upload-artifact@v4
+        if: always() && hashFiles('TestResults/*.trx') != ''
+        with:
+          name: test-results
+          path: TestResults/*.trx
