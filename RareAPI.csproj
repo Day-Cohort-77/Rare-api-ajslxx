@@ -13,4 +13,11 @@
     <PackageReference Include="Npgsql" Version="9.0.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="tests-template/**" />
+    <Content Remove="tests-template/**" />
+    <EmbeddedResource Remove="tests-template/**" />
+    <None Remove="tests-template/**" />
+  </ItemGroup>
+
 </Project>
