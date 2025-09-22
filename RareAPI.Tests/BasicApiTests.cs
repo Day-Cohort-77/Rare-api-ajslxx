@@ -30,4 +30,27 @@ public class BasicApiTests : IClassFixture<WebApplicationFactory<Program>>
         var content = await response.Content.ReadAsStringAsync();
         Assert.Contains("Welcome to Rare API!", content);
     }
+
+    [Fact]
+    public async Task GetNonExistentEndpoint_ReturnsNotFound()
+    {
+        // Act
+        var response = await _client.GetAsync("/nonexistent-endpoint");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("/")]
+    public async Task KnownEndpoints_DoNotReturnInternalServerError(string endpoint)
+    {
+        // Act
+        var response = await _client.GetAsync(endpoint);
+
+        // Assert
+        // We don't expect 500 Internal Server Error for these endpoints
+        // They might return 401, 404, or other status codes, but not 500
+        Assert.NotEqual(HttpStatusCode.InternalServerError, response.StatusCode);
+    }
 }
