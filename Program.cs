@@ -29,13 +29,17 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 
-using (var scope = app.Services.CreateScope())
+// Initialize database only if not in testing environment
+if (!app.Environment.IsEnvironment("Testing"))
 {
-    var dbService = scope.ServiceProvider.GetRequiredService<DatabaseService>();
-    await dbService.InitializeDatabaseAsync();
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbService = scope.ServiceProvider.GetRequiredService<DatabaseService>();
+        await dbService.InitializeDatabaseAsync();
 
 
-    await dbService.SeedDatabaseAsync();
+        await dbService.SeedDatabaseAsync();
+    }
 }
 
 
@@ -54,3 +58,6 @@ app.MapSubscriptionEndpoints();
 app.MapReactionEndpoints();
 
 app.Run();
+
+// Make Program class accessible for testing
+public partial class Program { }
